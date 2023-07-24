@@ -18,7 +18,7 @@ class Config:
         """Paràmetre n: defineix l'ordre del graf"""
         self.x = 1
         """Paràmetre x: defineix l'àrea del quadrat on es projecta el graf"""
-        self.r = 0.1
+        self.r = 0.3
         """Paràmetre r: defineix el radi a partir del qual s'extableixen les adjacències"""
         self.num_graph = 50
         """Paràmetre num_graph: defineix el número de graphs a generar pel graf unió"""

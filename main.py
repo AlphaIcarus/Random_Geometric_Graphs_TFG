@@ -8,18 +8,32 @@ from config import Config
 
 import random
 
+# Global parameters
+
+conf = Config()
+
 # Functions
 
 def drawSimpleGraph(G: nx.graph):
     """Donat un graf, imprimeix per pantalla la seva representació gràfica"""
     # TODO: REDO this function
+    
     subax1 = plt.subplot(121)
     nx.draw(G, with_labels=True, font_weight='bold')
     subax2 = plt.subplot(122)
     nx.draw_shell(G, nlist=[range(5, 10), range(5)], with_labels=True, font_weight='bold')
     plt.show()
     
-def drawRandomGeometricGraph(G: nx.graph):
+def drawRandomGeometricGraph(Gph: Graph):
+    """TODO: Rehacer el código para imprimir más bonito
+       TODO: Modificar el código para que dependa de los parámetros de Gph
+    
+    Imprimeix per pantalla el graf aleatori geomètric
+    
+    Codi importat directament des d'el web de NetworkX: 
+    https://networkx.org/documentation/stable/auto_examples/drawing/plot_random_geometric_graph.html"""
+    
+    G = Gph.graph
     pos = nx.get_node_attributes(G, "pos")
     
     # find node near center (0.5,0.5)
@@ -46,8 +60,8 @@ def drawRandomGeometricGraph(G: nx.graph):
         cmap=plt.cm.Reds_r,
     )
 
-    plt.xlim(-0.05, 1.05)
-    plt.ylim(-0.05, 1.05)
+    plt.xlim(-0.05, 1.05)   # Gph.x + 0.05
+    plt.ylim(-0.05, 1.05)   # Gph.x + 0.05
     plt.axis("off")
     plt.show()
     
@@ -62,8 +76,6 @@ def main():
         exit(1) 
         
     # Parameter parsing and introduction
-    conf = Config()
-
     try:
         if len(sys.argv) > 1:
             conf.n = int(sys.argv[1])
@@ -77,21 +89,18 @@ def main():
         print("El format d'algun paràmetre és erroni. Si us plau intenta-ho un altre cop")
         exit(1)
         
+    # Script
     collection = []
     for i in range(0,conf.num_graph):
         collection.append(Graph(i,conf.n,conf.r,conf.x))
 
     union = UnionGraph(collection)
-    drawRandomGeometricGraph(collection[0].graph)        # Esto no funciona
-        
-    # Script
+    drawRandomGeometricGraph(union)
     
     # Comment zone
-    
     """
     
     """
-    
 
 # Main script
 main()
