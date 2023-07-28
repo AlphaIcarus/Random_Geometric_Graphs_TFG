@@ -21,20 +21,6 @@ class Graph:
     
     # Basic data
     
-    def getNumberOfNodes(self):
-        return self.graph.number_of_nodes()
-    
-    def getNumberOfEdges(self):
-        return self.graph.number_of_edges()
-    
-    # Connected components 
-    
-    def getNumberConnectedComponents(self):
-        return nx.number_connected_components(self.graph)
-    
-    def getConnectedComponents(self):
-        return nx.connected_components(self.graph)
-    
     # Tabular information
     
     def getInfo(self):
@@ -46,7 +32,7 @@ class Graph:
         dct = {
             "Order":self.graph.order(),
             "Size":self.graph.size(),
-            "Radius":nx.radius(self.graph) if nx.is_connected(self.graph) else math.inf,           
+            "Radius":nx.radius(self.graph) if nx.is_connected(self.graph) else math.inf,
             "Diameter":nx.diameter(self.graph) if nx.is_connected(self.graph) else math.inf
         }
         frame = pd.DataFrame(index=[0], data=dct)
@@ -64,15 +50,29 @@ class Graph:
     
     # Data save / load
     
-    def save(self):
-        """Guarda el graf en memòria, en un format que es pot llegir de nou per recuperar-lo.
-        
-        De moment farem servir el format XML per dades organitzades de manera arbòria.
-        
-        TODO
+    def saveXML(self, fileName: str):
         """
-        content = et.ElementTree()
-        file = os.open("w", "./samples/graph.txt")
+        Mètode per guardar a memòria les dades de l'objecte.
+        """
+        tree = et.ElementTree()
+        
+        # TODO meter los datos en el Element Tree
+        
+        tree.write("./samples/" + fileName + ".xml")
+        
+        return
+    
+    def loadXML(self, fileName: str):
+        """
+        Mètode per carregar de memòria les dades de l'objecte.
+        
+        TODO Mirar si hay alguna manera de implementar esto como constructora
+        """
+        tree = et.parse("./samples/" + fileName + ".xml")
+        
+        # TODO obtener todos los datos del XML y meterlos en Graph
+        
+        return
 
 
 class UnionGraph(Graph):
@@ -131,6 +131,31 @@ class UnionGraph(Graph):
         return
     
     # Data save / load
+    
+    def saveXML(self, fileName: str):
+        """
+        Mètode per guardar a memòria les dades de l'objecte.
+        """
+        tree = et.ElementTree()
+        
+        # TODO meter los datos en el Element Tree
+        
+        tree.write("./samples/" + fileName + ".xml")
+        
+        return
+    
+    def loadXML(self, fileName: str):
+        """
+        Mètode per carregar de memòria les dades de l'objecte.
+        
+        TODO Mirar si hay alguna manera de implementar esto como constructora
+        """
+        tree = et.parse("./samples/" + fileName + ".xml")
+        
+        # TODO obtener todos los datos del XML y meterlos en Graph
+        
+        return
+    
 
 """ Things to do """
 
@@ -138,5 +163,7 @@ class UnionGraph(Graph):
 
 """ Script para testing """
 
-U = UnionGraph([Graph(i, 100, 0.2, 1.0,) for i in range(0,4)])
+"""
+U = UnionGraph([Graph(i, 100, 0.2, 1.0) for i in range(0,4)])
 U.printInfo()
+"""

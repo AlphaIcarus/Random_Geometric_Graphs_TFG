@@ -13,20 +13,9 @@ import random
 conf = Config()
 
 # Functions
-
-def drawSimpleGraph(G: nx.graph):
-    """Donat un graf, imprimeix per pantalla la seva representació gràfica"""
-    # TODO: REDO this function
-    
-    subax1 = plt.subplot(121)
-    nx.draw(G, with_labels=True, font_weight='bold')
-    subax2 = plt.subplot(122)
-    nx.draw_shell(G, nlist=[range(5, 10), range(5)], with_labels=True, font_weight='bold')
-    plt.show()
     
 def drawRandomGeometricGraph(Gph: Graph):
-    """TODO: Rehacer el código para imprimir más bonito
-       TODO: Modificar el código para que dependa de los parámetros de Gph
+    """TODO: Rehacer el código para imprimir más bonito (IMPORTANTE)
     
     Imprimeix per pantalla el graf aleatori geomètric
     
@@ -35,28 +24,14 @@ def drawRandomGeometricGraph(Gph: Graph):
     
     G = Gph.graph
     pos = nx.get_node_attributes(G, "pos")
-    
-    # find node near center (0.5,0.5)
-    dmin = Gph.x
-    ncenter = 0
-    for n in pos:
-        x, y = pos[n]
-        d = (x - Gph.x/2.0) ** 2 + (y - Gph.x/2.0) ** 2
-        if d < dmin:
-            ncenter = n
-            dmin = d
-
-    # color by path length from node near center
-    p = dict(nx.single_source_shortest_path_length(G, ncenter))
 
     plt.figure(figsize=(8, 8))
-    nx.draw_networkx_edges(G, pos, alpha=0.4)
+    nx.draw_networkx_edges(G, pos, edgelist=G.edges(), alpha=0.4)
     nx.draw_networkx_nodes(
         G,
         pos,
-        nodelist=list(p.keys()),
-        node_size=80,
-        node_color=list(p.values()),
+        nodelist=G.nodes(),
+        node_size=20,
         cmap=plt.cm.Reds_r,
     )
 
