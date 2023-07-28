@@ -1,0 +1,18 @@
+# Pruebas para el XML
+
+<Graph>
+	<Id>
+	<N>
+	<R>
+	<X>
+	<Node>
+		<NodeId>
+		<Xcoord>
+		<Ycoord>
+	</Node>
+	...
+	<Adjacency>
+		<NodeXId>
+		<NodeYId>
+	</Adjacency>
+</Graph>

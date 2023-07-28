@@ -37,11 +37,11 @@ def drawRandomGeometricGraph(Gph: Graph):
     pos = nx.get_node_attributes(G, "pos")
     
     # find node near center (0.5,0.5)
-    dmin = 1
+    dmin = Gph.x
     ncenter = 0
     for n in pos:
         x, y = pos[n]
-        d = (x - 0.5) ** 2 + (y - 0.5) ** 2
+        d = (x - Gph.x/2.0) ** 2 + (y - Gph.x/2.0) ** 2
         if d < dmin:
             ncenter = n
             dmin = d
@@ -60,8 +60,8 @@ def drawRandomGeometricGraph(Gph: Graph):
         cmap=plt.cm.Reds_r,
     )
 
-    plt.xlim(-0.05, 1.05)   # Gph.x + 0.05
-    plt.ylim(-0.05, 1.05)   # Gph.x + 0.05
+    plt.xlim(-0.05, Gph.x + 0.05)   
+    plt.ylim(-0.05, Gph.x + 0.05)   
     plt.axis("off")
     plt.show()
     
@@ -80,7 +80,7 @@ def main():
         if len(sys.argv) > 1:
             conf.n = int(sys.argv[1])
         if len(sys.argv) > 2:
-            conf.x = int(sys.argv[2])
+            conf.x = float(sys.argv[2])
         if len(sys.argv) > 3:
             conf.r = float(sys.argv[3])
         if len(sys.argv) > 4:
