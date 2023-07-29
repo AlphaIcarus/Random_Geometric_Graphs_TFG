@@ -70,7 +70,7 @@ def main():
         collection.append(Graph(i,conf.n,conf.r,conf.x))
 
     union = UnionGraph(collection)
-    drawRandomGeometricGraph(union)
+    drawRandomGeometricGraph(union.graphList[0])
     
     # Comment zone
     """
