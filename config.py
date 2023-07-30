@@ -5,22 +5,37 @@ Paquet que conté la configuració de paràmetres per l'execució de l'script pr
 TODO Poner documentción de esta clase
 """
 
+from argparse import Namespace
+
 class Config:
     """
     Classe que reuneix els atributs per executar l'script principal
     """
 
-    def __init__(self):
+    def __init__(self, args: Namespace | None):
         """Constructora per la classe de configuració.
         
         Defineix els paràmetres necessaris per executar l'script.
+        TODO aplicar restricciones en los parámetros (por ejemplo, 0 <= r <= self.x)
         """
-        self.n = 100
+        self.n: int
         """Paràmetre n: defineix l'ordre del graf"""
-        self.x = 1
+        self.x: float
         """Paràmetre x: defineix l'àrea del quadrat on es projecta el graf"""
-        self.r = 0.1
+        self.r: float
         """Paràmetre r: defineix el radi a partir del qual s'extableixen les adjacències"""
-        self.num_graph = 50
+        self.num_graph: int
         """Paràmetre num_graph: defineix el número de graphs a generar pel graf unió"""
+        
+        if args is not None:
+            self.n = args.n
+            self.x = args.x
+            self.r = args.r
+            self.num_graph = args.num_graph
+        else:
+            self.n = 100
+            self.x = 1.0
+            self.r = 0.1
+            self.num_graph = 50
+
         return
