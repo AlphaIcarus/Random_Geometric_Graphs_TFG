@@ -96,11 +96,14 @@ def main():
     """Main script"""
        
     # Script
-    collection = []
-    for i in range(0,conf.num_graph):
-        collection.append(Graph(i,conf.n,conf.r,conf.x))
-
+    collection = [Graph(i,conf.n,conf.r,conf.x) for i in range(0,conf.num_graph)]
     union = UnionGraph(collection)
+    dfUnion, dfCollect = union.getInfo()
+    print("Dataframe for Union graph:")
+    print(dfUnion)
+    print("Dataframe for source graphs:")
+    print(dfCollect)
+    
     drawRandomGeometricGraph(union.graphList[0])
     
     # Comment zone
@@ -111,4 +114,5 @@ def main():
 
 # Main script
 config()
-main()
+g = Graph(0,conf.n,conf.r,conf.x)
+g.saveXML("Prueba1", True)

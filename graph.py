@@ -51,16 +51,46 @@ class Graph:
     
     # Data save / load
     
-    def saveXML(self, fileName: str):
+    def saveXML(self, fileName: str | None, mode: bool):
         """
-        Mètode per guardar a memòria les dades de l'objecte.
-        """
-        tree = et.ElementTree()
+        Mètode per guardar a memòria, o imprimir per terminal, les dades de l'objecte.
+        """       
+        nodes = [n for n in self.graph.nodes]                       # [ID]
+        edges = [e for e in self.graph.edges]                       # [(nodeID, nodeID)]
+        nodesPos = nx.get_node_attributes(self.graph, "pos")        # [(coordX, coordY)]
+        
+        order = self.graph.order()
+        size = self.graph.size()
         
         # TODO meter los datos en el Element Tree
+        gr = et.Element('graph')
+        id = et.SubElement(gr, 'id', attrib={"value":str(self.id)})
+        n = et.SubElement(gr, 'n', attrib={"value":str(self.n)})
+        r = et.SubElement(gr, 'r', attrib={"value":str(self.r)})
+        x = et.SubElement(gr, 'x', attrib={"value":str(self.x)})
+
+        # Node info
+        nodeInfo = [et.SubElement(gr, 'node') for i in range(order)]
+        nodeIds  = [et.SubElement(nodeInfo[i], 'nodeId', attrib={"value":str(nodes[i])}) for i in range(order)]
+        nodeXCoord = [et.SubElement(nodeInfo[i], 'xCoord', attrib={"value":str(nodesPos[i][0])}) for i in range(order)]
+        nodeYCoord = [et.SubElement(nodeInfo[i], 'yCoord', attrib={"value":str(nodesPos[i][1])}) for i in range(order)]
         
-        tree.write("./samples/" + fileName + ".xml")
+        # Adjacency info
+        adjacencyInfo = [et.SubElement(gr, 'adjacency') for i in range(size)]
+        adjacencyUvertex = [et.SubElement(adjacencyInfo[i], 'uVertex', attrib={"value":str(edges[i][0])}) for i in range(size)]
+        adjacencyVvertex = [et.SubElement(adjacencyInfo[i], 'vVertex', attrib={"value":str(edges[i][1])}) for i in range(size)]
         
+        # Printing
+        from xml.dom import minidom
+        xmlstr = minidom.parseString(et.tostring(gr)).toprettyxml(indent="   ")
+        
+        if mode == True:
+            with open("./samples/" + fileName + ".xml", "w") as f:
+                f.flush()
+                f.write(xmlstr)
+        else:
+            print(xmlstr)
+    
         return
     
     def loadXML(self, fileName: str):
