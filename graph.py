@@ -2,8 +2,10 @@ import networkx as nx
 import random
 import pandas as pd
 import math
-import os
 import xml.etree.ElementTree as et
+
+# Required by networkx.random_geometric_graph
+import scipy
 
 class Graph:
 
@@ -39,7 +41,6 @@ class Graph:
         
         return frame
 
-    
     def printInfo(self):
         """
         """
