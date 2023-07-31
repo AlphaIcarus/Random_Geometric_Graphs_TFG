@@ -27,15 +27,10 @@ class Config:
         self.num_graph: int
         """Paràmetre num_graph: defineix el número de graphs a generar pel graf unió"""
         
-        if args is not None:
-            self.n = args.n
-            self.x = args.x
-            self.r = args.r
-            self.num_graph = args.num_graph
-        else:
-            self.n = 100
-            self.x = 1.0
-            self.r = 0.1
-            self.num_graph = 50
+        # Value insertion
+        self.n = args.n
+        self.x = args.x
+        self.r = args.r
+        self.num_graph = args.num_graph
 
         return

@@ -15,11 +15,11 @@ from config import Config
 ## Utils
     
 def drawRandomGeometricGraph(Gph: Graph):
-    """TODO: Rehacer el código para imprimir más bonito (IMPORTANTE)
+    """TODO: Rehacer el código para imprimir más bonito
     
     Imprimeix per pantalla el graf aleatori geomètric
     
-    Codi importat directament des d'el web de NetworkX: 
+    Codi importat i adaptat des d'el web de NetworkX: 
     https://networkx.org/documentation/stable/auto_examples/drawing/plot_random_geometric_graph.html"""
     
     G = Gph.graph

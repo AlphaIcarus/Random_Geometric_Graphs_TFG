@@ -10,6 +10,7 @@
 # !pip install random
 # !pip install math
 # !pip install xml
+# !pip install scipy
 
 # Global parameters
 
