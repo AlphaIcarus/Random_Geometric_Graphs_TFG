@@ -25,7 +25,7 @@ class Graph:
     
     # Tabular information
     
-    def getInfo(self):
+    def getInfo(self) -> pd.DataFrame:
         """
         TODO doc
         TODO Puede ser interesante guardar la informacón como atributo en la propia clase
@@ -34,15 +34,18 @@ class Graph:
         dct = {
             "Order":self.graph.order(),
             "Size":self.graph.size(),
+            "Is_connected":nx.is_connected(self.graph),
+            "Connected_components":nx.number_connected_components(self.graph),
             "Radius":nx.radius(self.graph) if nx.is_connected(self.graph) else math.inf,
-            "Diameter":nx.diameter(self.graph) if nx.is_connected(self.graph) else math.inf
+            "Diameter":nx.diameter(self.graph) if nx.is_connected(self.graph) else math.inf,
+            "Is_eulerian":nx.is_eulerian(self.graph),
         }
         frame = pd.DataFrame(index=[0], data=dct)
-        
         return frame
 
     def printInfo(self):
         """
+        Printa per terminal la informació relacionada amb el graf
         """
         frame = self.getInfo()
         print(frame)
@@ -106,13 +109,18 @@ class Graph:
         return
 
 
-class UnionGraph(Graph):
+class MultilayerGraph(Graph):
 
     def __init__(self, graphs: list[Graph]):
-
+        """
+        Constructora de la classe. Construeix, a partir d'un conjunt de grafs aleatoris multicapa,
+        un graf aleatori geomètric multicapa.
+        
+        TODO la implementación de las adyacencias no funciona
+        """
         self.graphList: list[Graph] = graphs
 
-        self.graph: nx.Graph = graphs[0].graph                     # Graph itself
+        self.graph = graphs[0].graph.copy()                     # Graph itself
         self.id = graphs[0].id                                  # Identifier of the graph
         self.n = graphs[0].n                                    # Number of nodes of the graph
         self.x = graphs[0].x                                    # Longitude/Amplitude of the map
@@ -120,11 +128,9 @@ class UnionGraph(Graph):
 
         adjacencies = set()
         for i in range(0,len(graphs)):
-            s = set(graphs[i].graph.edges())
-            adjacencies.union(s)
+            adjacencies = adjacencies.union(set(graphs[i].graph.edges())) 
 
-        self.graph.add_edges_from(list(adjacencies))        # Alomejor no hace falta ni pasarlo a list
-
+        self.graph.add_edges_from((adjacencies))
         return
     
     # Tabular information
@@ -139,7 +145,7 @@ class UnionGraph(Graph):
         TODO Puede ser interesante guardar la informacón como atributo en la propia clase
         TODO Rellenar el dataframme con toda la info de interés
         """
-        dfUnion = Graph.getInfo(self)
+        dfUnion = Graph.getInfo(self)        
         size = len(self.graphList)
         dct = {
             "Order":[self.graphList[i].graph.order() for i in range(0,size)],
@@ -151,27 +157,42 @@ class UnionGraph(Graph):
         
         return (dfUnion, dfCollect)
     
+    def newGetInfo(self) -> pd.DataFrame:
+        """
+        Mètode per obtenir totes les dades d'interés del graf unió.
+        
+        Primer obtenim el dataframe del graf unió, posteriorment obtenim el de la seva col·lecció.
+        
+        TODO doc
+        TODO Puede ser interesante guardar la informacón como atributo en la propia clase
+        TODO Rellenar el dataframme con toda la info de interés
+        """
+        df = [Graph.getInfo(self)]
+        size = len(self.graphList)
+        
+        for i in range(0,size):
+            graphDf = Graph.getInfo(self.graphList[i])
+            df.append(graphDf)
+            
+        return pd.concat(df)
+    
     def printInfo(self):
         """
         Imprimeix per pantalla el les dades del graf unió, així com les dades de cadascun dels grafs dels quals parteix.
         """
-        dfUnion, dfCollect = self.getInfo()
-        
-        print(dfUnion)
-        print(dfCollect)
+        df = self.getInfo()
+        print(df)
         return
     
     # Data save / load
     
-    def saveXML(self, fileName: str):
+    def saveXML(self, fileName: str | None, mode: bool):
         """
         Mètode per guardar a memòria les dades de l'objecte.
         """
-        tree = et.ElementTree()
-        
-        # TODO meter los datos en el Element Tree
-        
-        tree.write("./samples/" + fileName + ".xml")
+        Graph.saveXML(self, fileName, mode)
+        for i in range(len(self.graphList)):
+            Graph.saveXML(self.graphList[i], fileName + f'_Graph{i}', mode)
         
         return
     
@@ -193,8 +214,3 @@ class UnionGraph(Graph):
 # TODO añadir documentación detallada sobre los parámetros y funciones
 
 """ Script para testing """
-
-"""
-U = UnionGraph([Graph(i, 100, 0.2, 1.0) for i in range(0,4)])
-U.printInfo()
-"""

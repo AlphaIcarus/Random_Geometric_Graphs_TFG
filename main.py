@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 import networkx as nx
 import argparse as ap
 
-from graph import Graph, UnionGraph
+from graph import Graph, MultilayerGraph
 from config import Config
 
 # Global parameters
@@ -97,14 +97,13 @@ def main():
        
     # Script
     collection = [Graph(i,conf.n,conf.r,conf.x) for i in range(0,conf.num_graph)]
-    union = UnionGraph(collection)
-    dfUnion, dfCollect = union.getInfo()
-    print("Dataframe for Union graph:")
-    print(dfUnion)
-    print("Dataframe for source graphs:")
-    print(dfCollect)
+    union = MultilayerGraph(collection)
+    df = union.newGetInfo()
+    print("Dataframe for multilayer graph:")
+    print(df)
     
-    drawRandomGeometricGraph(union.graphList[0])
+    # union.saveXML("Prueba1", True)
+    drawRandomGeometricGraph(union)
     
     # Comment zone
     """
@@ -114,5 +113,4 @@ def main():
 
 # Main script
 config()
-g = Graph(0,conf.n,conf.r,conf.x)
-g.saveXML("Prueba1", True)
+main()

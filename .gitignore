@@ -1,0 +1,7 @@
+# Files to ignore. Feel free to comment sections so files end up online
+
+# Samples
+*.xml
+
+# Python compilations
+__pycache__
