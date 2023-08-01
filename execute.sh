@@ -2,6 +2,7 @@
 
 # Autoconfiguration
 # Uncomment to upgrade packages
+# TODO rellenar con todos los paquetes necesarios
 
 # !pip install matplotlib
 # !pip install networkx
