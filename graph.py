@@ -10,7 +10,9 @@ import scipy
 class Graph:
 
     def __init__(self, id: int, n: int, r: float, x: float):
-        """Constructora de la classe Graph"""
+        """
+        Constructora de la classe Graph
+        """
         self.id = id                                            # Identifier of the graph
         self.n = n                                              # Number of nodes of the graph
         self.x = x                                              # Longitude/Amplitude of the map
@@ -20,8 +22,6 @@ class Graph:
         self.graph = nx.random_geometric_graph(n=n, radius=r, pos=pos)   # Graph itself 
     
         return
-    
-    # Basic data
     
     # Tabular information
     
@@ -43,7 +43,7 @@ class Graph:
         frame = pd.DataFrame(index=[0], data=dct)
         return frame
 
-    def printInfo(self):
+    def printInfo(self) -> None:
         """
         Printa per terminal la informació relacionada amb el graf
         """
@@ -54,7 +54,7 @@ class Graph:
     
     # Data save / load
     
-    def saveXML(self, fileName: str | None, mode: bool):
+    def saveXML(self, fileName: str | None, mode: bool) -> None:
         """
         Mètode per guardar a memòria, o imprimir per terminal, les dades de l'objecte.
         """       
@@ -96,7 +96,7 @@ class Graph:
     
         return
     
-    def loadXML(self, fileName: str):
+    def loadXML(self, fileName: str) -> None:
         """
         Mètode per carregar de memòria les dades de l'objecte.
         
@@ -135,29 +135,7 @@ class MultilayerGraph(Graph):
     
     # Tabular information
     
-    def getInfo(self):
-        """
-        Mètode per obtenir totes les dades d'interés del graf unió.
-        
-        Primer obtenim el dataframe del graf unió, posteriorment obtenim el de la seva col·lecció.
-        
-        TODO doc
-        TODO Puede ser interesante guardar la informacón como atributo en la propia clase
-        TODO Rellenar el dataframme con toda la info de interés
-        """
-        dfUnion = Graph.getInfo(self)        
-        size = len(self.graphList)
-        dct = {
-            "Order":[self.graphList[i].graph.order() for i in range(0,size)],
-            "Size":[self.graphList[i].graph.size() for i in range(0,size)],
-            "Radius":[nx.radius(self.graphList[i].graph) if nx.is_connected(self.graphList[i].graph) else math.inf for i in range(0,size)],           
-            "Diameter":[nx.diameter(self.graphList[i].graph) if nx.is_connected(self.graphList[i].graph) else math.inf for i in range(0,size)]
-        }
-        dfCollect = pd.DataFrame(data = dct)
-        
-        return (dfUnion, dfCollect)
-    
-    def newGetInfo(self) -> pd.DataFrame:
+    def getInfo(self) -> pd.DataFrame:
         """
         Mètode per obtenir totes les dades d'interés del graf unió.
         
@@ -176,7 +154,7 @@ class MultilayerGraph(Graph):
             
         return pd.concat(df)
     
-    def printInfo(self):
+    def printInfo(self) -> None:
         """
         Imprimeix per pantalla el les dades del graf unió, així com les dades de cadascun dels grafs dels quals parteix.
         """
@@ -186,7 +164,7 @@ class MultilayerGraph(Graph):
     
     # Data save / load
     
-    def saveXML(self, fileName: str | None, mode: bool):
+    def saveXML(self, fileName: str | None, mode: bool) -> None:
         """
         Mètode per guardar a memòria les dades de l'objecte.
         """
@@ -196,7 +174,7 @@ class MultilayerGraph(Graph):
         
         return
     
-    def loadXML(self, fileName: str):
+    def loadXML(self, fileName: str) -> None:
         """
         Mètode per carregar de memòria les dades de l'objecte.
         

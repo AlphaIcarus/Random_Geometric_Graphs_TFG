@@ -4,7 +4,7 @@
 *.xml
 
 # Python compilations
-__pycache__
+__pycache__/
 
 # Other
 anotaciones

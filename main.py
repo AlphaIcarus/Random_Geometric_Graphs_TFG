@@ -51,13 +51,13 @@ def config():
     global conf
     
     parser = ap.ArgumentParser(
-        prog="main",
+        prog="main.py",
         description="Script principal que computa una sèrie de grafs geomètrics aleatoris, i amb ells en crea un multicapa."
     )
     # Parser for n parameter
     parser.add_argument(
         '-n', 
-        help="Numero de vèrtexs que contindrà cada graf",
+        help="Número de vèrtexs que contindrà cada graf",
         type=int,
         default=100,
         dest="n"
@@ -98,7 +98,7 @@ def main():
     # Script
     collection = [Graph(i,conf.n,conf.r,conf.x) for i in range(0,conf.num_graph)]
     union = MultilayerGraph(collection)
-    df = union.newGetInfo()
+    df = union.getInfo()
     print("Dataframe for multilayer graph:")
     print(df)
     
