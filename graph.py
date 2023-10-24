@@ -3,9 +3,13 @@ import random
 import pandas as pd
 import math
 import xml.etree.ElementTree as et
+import matplotlib.pyplot as plt
 
 # Required by networkx.random_geometric_graph
 import scipy
+
+# Things to do:
+# TODO añadir documentación detallada sobre los parámetros y funciones
 
 class Graph:
 
@@ -23,7 +27,13 @@ class Graph:
     
         return
     
-    # Tabular information
+    # Getters
+    
+    def getKCore(self) -> nx.graph:
+        """
+        Mètode per obtenir el graf k-core. Aquest graf és igual que l'original, però cada note té grau k (amb k màxima).
+        """
+        return nx.k_core(self.graph)
     
     def getInfo(self) -> pd.DataFrame:
         """
@@ -31,14 +41,36 @@ class Graph:
         TODO Puede ser interesante guardar la informacón como atributo en la propia clase
         TODO Rellenar el dataframme con toda la info de interés
         """
+        
+        # Degrees
+        degrees = list(self.graph.degree)
+        min_degree = min(degrees)
+        max_degree = max(degrees)
+        
+        # Connected components
+        connected_components = sorted(nx.connected_components(self.graph), key=len, reverse=True)   #Sorted from largest to smallest
+        cc_sizes = map(len, connected_components)                                                   #Sorted from largest to smallest
+        
+        largest_component_nodes = max(nx.connected_components(self.graph), key=len)
+        largest_component = self.graph.subgraph(largest_component_nodes)
+        largest_c_diameter = nx.diameter(largest_component)
+        
         dct = {
             "Order":self.graph.order(),
             "Size":self.graph.size(),
             "Is_connected":nx.is_connected(self.graph),
             "Connected_components":nx.number_connected_components(self.graph),
+            "Largest_component_diameter":largest_c_diameter,
             "Radius":nx.radius(self.graph) if nx.is_connected(self.graph) else math.inf,
             "Diameter":nx.diameter(self.graph) if nx.is_connected(self.graph) else math.inf,
             "Is_eulerian":nx.is_eulerian(self.graph),
+            "Min_degree":min_degree,
+            "Max_degree":max_degree,
+            "Average_Clustering_Coefficient":nx.average_clustering(self.graph),
+            "Triangle_number":nx.triangles(self.graph), # Esto devuelve un mapping, hay que hacerlo de alguna otra forma
+            # Tamaños de componentes connexas
+            # K-core (grafo donde todos los nodos tienen grado k, k máxima) --> se cosigue con k_core de NetworkX
+                # Lo haremos en una función diferente y lo invocamos fuera
         }
         frame = pd.DataFrame(index=[0], data=dct)
         return frame
@@ -87,27 +119,15 @@ class Graph:
         from xml.dom import minidom
         xmlstr = minidom.parseString(et.tostring(gr)).toprettyxml(indent="   ")
         
-        if mode == True:
+        if mode:
             with open("./samples/" + fileName + ".xml", "w") as f:
                 f.flush()
                 f.write(xmlstr)
+                f.close()
         else:
             print(xmlstr)
     
         return
-    
-    def loadXML(self, fileName: str) -> None:
-        """
-        Mètode per carregar de memòria les dades de l'objecte.
-        
-        TODO Mirar si hay alguna manera de implementar esto como constructora
-        """
-        tree = et.parse("./samples/" + fileName + ".xml")
-        
-        # TODO obtener todos los datos del XML y meterlos en Graph
-        
-        return
-
 
 class MultilayerGraph(Graph):
 
@@ -127,7 +147,7 @@ class MultilayerGraph(Graph):
         self.r = graphs[0].r                                    # Radius of area to get adjacencies
 
         adjacencies = set()
-        for i in range(0,len(graphs)):
+        for i in range(len(graphs)):
             adjacencies = adjacencies.union(set(graphs[i].graph.edges())) 
 
         self.graph.add_edges_from((adjacencies))
@@ -141,18 +161,95 @@ class MultilayerGraph(Graph):
         
         Primer obtenim el dataframe del graf unió, posteriorment obtenim el de la seva col·lecció.
         
-        TODO doc
         TODO Puede ser interesante guardar la informacón como atributo en la propia clase
         TODO Rellenar el dataframme con toda la info de interés
         """
         df = [Graph.getInfo(self)]
         size = len(self.graphList)
         
-        for i in range(0,size):
+        for i in range(size):
             graphDf = Graph.getInfo(self.graphList[i])
             df.append(graphDf)
             
         return pd.concat(df)
+    
+    def getGraphics(self) -> list:
+        """
+        Mètode per obtenir els gràfics de com varien els atributs del graf multicapa, de manera progressiva.
+        
+        Els gràfics que s'obtenen venen donats per les propietats que volem obtenir del graf (donat a getInfo)
+        """
+        
+        # Paràmetres que volem estudiar la seva progressió
+        
+        g = self.graphList[0].graph.copy()
+        g.clear_edges()                         # Esto puede ser que no sea necesario
+        
+        layers = [i for i in range(1,len(self.graphList)+1)]
+        
+        order = []
+        size = []
+        is_connected = []
+        number_connected_components = []
+        largest_component_diameter = []
+        radius = []
+        diameter = []
+        is_eulerian = []
+        min_degree = []
+        max_degree = []
+        average_clustering_coefficient = []
+        triangle_number = []
+        
+        for graph in self.graphList:
+            g.add_edges_from((set(graph.graph.edges())))
+            
+            # We add the new attributes of the i-th step graph
+            
+            degrees = list(self.graph.degree)
+            min_d = min(degrees)
+            max_d = max(degrees)
+            
+            largest_component_nodes = max(nx.connected_components(self.graph), key=len)
+            largest_component = self.graph.subgraph(largest_component_nodes)
+            largest_c_diameter = nx.diameter(largest_component)
+            
+            order.append(g.order())
+            size.append(g.size())
+            is_connected.append(nx.is_connected(g))
+            number_connected_components.append(nx.number_connected_components(g))
+            largest_component_diameter.append(largest_c_diameter)
+            radius.append(nx.radius(g) if nx.is_connected(g) else math.inf)
+            diameter.append(nx.diameter(g) if nx.is_connected(g) else math.inf)
+            is_eulerian.append(nx.is_eulerian(g))
+            min_degree.append(min_d)
+            max_degree.append(max_d)
+            average_clustering_coefficient.append(nx.average_clustering(g))
+            triangle_number.append(nx.triangles(g))
+            
+        # Creación de gráficos 
+        
+        fig, ax = plt.subplots()
+        ax.plot([1, 2, 3, 4], [1, 2, 0, 0.5])
+        plt.show()
+        
+        # Dictionary with everything
+        plots = {
+            "Order": None,
+            "Size": None,
+            "Is_connected": None,
+            "Connected_components": None,
+            "Largest_component_diameter": None,
+            "Radius": None,
+            "Diameter": None,
+            "Is_eulerian": None,
+            "Min_degree": None,
+            "Max_degree": None,
+            "Average_Clustering_Coefficient": None,
+            "Triangle_number": None,
+            "K-core_graph": None  # Aquí me gustaría imprimir el grafo K-core directamente
+        }
+        
+        return plots
     
     def printInfo(self) -> None:
         """
@@ -173,22 +270,3 @@ class MultilayerGraph(Graph):
             Graph.saveXML(self.graphList[i], fileName + f'_Graph{i}', mode)
         
         return
-    
-    def loadXML(self, fileName: str) -> None:
-        """
-        Mètode per carregar de memòria les dades de l'objecte.
-        
-        TODO Mirar si hay alguna manera de implementar esto como constructora
-        """
-        tree = et.parse("./samples/" + fileName + ".xml")
-        
-        # TODO obtener todos los datos del XML y meterlos en Graph
-        
-        return
-    
-
-""" Things to do """
-
-# TODO añadir documentación detallada sobre los parámetros y funciones
-
-""" Script para testing """

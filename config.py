@@ -28,22 +28,36 @@ class Config:
         Defineix els paràmetres necessaris per executar l'script.
         TODO aplicar mejores restricciones para los parámetros
         """
+        self.test: str
+        """Paràmetre test: defineix el tipus de test que executem. """
         self.n: int
         """Paràmetre n: defineix l'ordre del graf"""
         self.x: float
         """Paràmetre x: defineix l'àrea del quadrat on es projecta el graf"""
-        self.r: float
+        self.r_ini: float
         """
-        Paràmetre r: defineix el radi a partir del qual s'extableixen les adjacències.\n
+        Paràmetre r_ini: defineix el radi a partir del qual s'extableixen les adjacències.\n
         Definim que el radi màxim és la llargada de la diagonal de l'àrea x*x
+        """
+        self.r_fin: float
+        """
+        Paràmetre r_fin: defineix el radi màzim dels tests.\n
+        Definim que el radi màxim és la llargada de la diagonal de l'àrea x*x
+        """
+        self.radius_add: float
+        """
+        Paràmetre radius_add: defineix els intervals de radi que fa servir els tests per executar les proves.
         """
         self.num_graph: int
         """Paràmetre num_graph: defineix el número de graphs a generar pel graf unió"""
         
         # Value insertion
+        self.test = args.test
         self.n = args.n
         self.x = args.x
-        self.r = args.r
+        self.r_ini = args.r_ini
+        self.r_fin = args.r_fin
+        self.radius_add = args.radius_add
         self.num_graph = args.num_graph
         
         # Value checks

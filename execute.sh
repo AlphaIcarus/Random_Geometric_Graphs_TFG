@@ -2,7 +2,6 @@
 
 # Autoconfiguration
 # Uncomment to upgrade packages
-# TODO rellenar con todos los paquetes necesarios
 
 # !pip install matplotlib
 # !pip install networkx
@@ -16,4 +15,4 @@
 # Global parameters
 
 # Main script
-python3 main.py -n 100 -x 1.0 -r 0.1 -num_graph 50
+python3 main.py -test 000 -n 1000 -x 2.0 -r_ini 0.01 -r_fin 0.1 -radius_add 0.05 -num_graph 20  # Empezamos con dimensión 2 (x = 2.0)
