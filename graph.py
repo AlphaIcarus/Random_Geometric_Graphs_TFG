@@ -43,7 +43,7 @@ class Graph:
         """
         
         # Degrees
-        degrees = list(self.graph.degree)
+        degrees = [val for (_, val) in self.graph.degree()]
         min_degree = min(degrees)
         max_degree = max(degrees)
         
@@ -67,7 +67,7 @@ class Graph:
             "Min_degree":min_degree,
             "Max_degree":max_degree,
             "Average_Clustering_Coefficient":nx.average_clustering(self.graph),
-            "Triangle_number":nx.triangles(self.graph), # Esto devuelve un mapping, hay que hacerlo de alguna otra forma
+            "Triangle_number":None, # Esto devuelve un mapping, hay que hacerlo de alguna otra forma
             # Tamaños de componentes connexas
             # K-core (grafo donde todos los nodos tienen grado k, k máxima) --> se cosigue con k_core de NetworkX
                 # Lo haremos en una función diferente y lo invocamos fuera
@@ -128,6 +128,34 @@ class Graph:
             print(xmlstr)
     
         return
+    
+    # Graph printing
+    
+    def drawRandomGeometricGraph(self) -> None:
+        """TODO: Rehacer el código para imprimir más bonito
+        
+        Imprimeix per pantalla el graf aleatori geomètric
+        
+        Codi importat i adaptat des d'el web de NetworkX: 
+        https://networkx.org/documentation/stable/auto_examples/drawing/plot_random_geometric_graph.html"""
+        
+        G = self.graph
+        pos = nx.get_node_attributes(G, "pos")
+
+        plt.figure(figsize=(8, 8))
+        nx.draw_networkx_edges(G, pos, edgelist=G.edges(), alpha=0.4)
+        nx.draw_networkx_nodes(
+            G,
+            pos,
+            nodelist=G.nodes(),
+            node_size=20,
+            cmap=plt.cm.Reds_r,
+        )
+
+        plt.xlim(-0.05, self.x + 0.05)   
+        plt.ylim(-0.05, self.x + 0.05)   
+        plt.axis("off")
+        plt.show()
 
 class MultilayerGraph(Graph):
 
@@ -153,7 +181,7 @@ class MultilayerGraph(Graph):
         self.graph.add_edges_from((adjacencies))
         return
     
-    # Tabular information
+    # Getters
     
     def getInfo(self) -> pd.DataFrame:
         """
@@ -173,6 +201,27 @@ class MultilayerGraph(Graph):
             
         return pd.concat(df)
     
+    def seeProgression(self, rang: int) -> list:
+        """
+        Mètode per obtenir imatges de com evoluciona el graf multicapa en diferents estats
+        
+        - TODO actualmente se generan uno a uno, hay que obtener todas las imágenes de grafo y luego imprimirlas
+        """
+        
+        inter = rang
+        g = self.graphList[0].graph.copy()
+        
+        for graph in self.graphList:
+            # Add new edges
+            g.add_edges_from(set(graph.graph.edges()))
+            inter -= 1
+            if inter == 0:
+                #Print graph
+                self.drawRandomGeometricGraph()
+                inter = rang
+        
+        pass
+    
     def getGraphics(self) -> list:
         """
         Mètode per obtenir els gràfics de com varien els atributs del graf multicapa, de manera progressiva.
@@ -183,7 +232,7 @@ class MultilayerGraph(Graph):
         # Paràmetres que volem estudiar la seva progressió
         
         g = self.graphList[0].graph.copy()
-        g.clear_edges()                         # Esto puede ser que no sea necesario
+        # g.clear_edges()                         # Esto puede ser que no sea necesario
         
         layers = [i for i in range(1,len(self.graphList)+1)]
         
@@ -215,39 +264,47 @@ class MultilayerGraph(Graph):
             
             order.append(g.order())
             size.append(g.size())
-            is_connected.append(nx.is_connected(g))
+            is_connected.append(1 if nx.is_connected(g) else 0)
             number_connected_components.append(nx.number_connected_components(g))
             largest_component_diameter.append(largest_c_diameter)
-            radius.append(nx.radius(g) if nx.is_connected(g) else math.inf)
+            radius.append(nx.radius(g) if nx.is_connected(g) else math.triangle_numberinf)
             diameter.append(nx.diameter(g) if nx.is_connected(g) else math.inf)
             is_eulerian.append(nx.is_eulerian(g))
             min_degree.append(min_d)
             max_degree.append(max_d)
             average_clustering_coefficient.append(nx.average_clustering(g))
-            triangle_number.append(nx.triangles(g))
+            triangle_number.append(sum(nx.triangles(g).values()))
             
         # Creación de gráficos 
-        
+        """
         fig, ax = plt.subplots()
         ax.plot([1, 2, 3, 4], [1, 2, 0, 0.5])
         plt.show()
+        """
         
-        # Dictionary with everything
+        axs = [plt.subplots()[1] for _ in range(13)]   # Generamos los plots necesarios (plot por atributo)
+        
+        # Pruebas
+        # axs[0].plot(layers, order)
+        
+        # Dictionary with everything (Tengo que arreglar muchas cosas)
         plots = {
-            "Order": None,
-            "Size": None,
-            "Is_connected": None,
-            "Connected_components": None,
-            "Largest_component_diameter": None,
-            "Radius": None,
-            "Diameter": None,
-            "Is_eulerian": None,
-            "Min_degree": None,
-            "Max_degree": None,
-            "Average_Clustering_Coefficient": None,
-            "Triangle_number": None,
+            "Order": axs[0].plot(layers, order),
+            "Size": axs[1].plot(layers, size),
+            "Is_connected": axs[2].plot(layers, is_connected),          
+            "Connected_components": axs[3].plot(layers, number_connected_components),
+            "Largest_component_diameter": axs[4].plot(layers, largest_component_diameter),
+            "Radius": axs[5].plot(layers, radius),
+            "Diameter": axs[6].plot(layers, diameter),
+            "Is_eulerian": axs[7].plot(layers, is_eulerian),
+            "Min_degree": axs[8].plot(layers, min_degree),
+            "Max_degree": axs[9].plot(layers, max_degree),
+            "Average_Clustering_Coefficient": axs[10].plot(layers, average_clustering_coefficient),
+            "Triangle_number": axs[11].plot(layers, triangle_number),
             "K-core_graph": None  # Aquí me gustaría imprimir el grafo K-core directamente
         }
+        
+        plt.show()
         
         return plots
     

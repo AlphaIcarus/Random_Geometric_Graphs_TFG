@@ -72,9 +72,14 @@ class Config:
             print(f"El valor de x ha de ser positiu major que 0.0")
             raise ValueError
         try:
-            assert(MINIMUM_RADIUS <= self.r <= sqrt(self.x ** self.x + self.x ** self.x))
+            assert(MINIMUM_RADIUS <= self.r_ini <= sqrt(self.x ** self.x + self.x ** self.x))
         except(AssertionError):
-            print(f"El radi no es troba en el rang de valors permesos:[{MINIMUM_RADIUS},{sqrt(self.x ** self.x + self.x ** self.x)}]")
+            print(f"El radi d'inici no es troba en el rang de valors permesos:[{MINIMUM_RADIUS},{sqrt(self.x ** self.x + self.x ** self.x)}]")
+            raise ValueError
+        try:
+            assert(MINIMUM_RADIUS <= self.r_fin <= sqrt(self.x ** self.x + self.x ** self.x))
+        except(AssertionError):
+            print(f"El radi final no es troba en el rang de valors permesos:[{MINIMUM_RADIUS},{sqrt(self.x ** self.x + self.x ** self.x)}]")
             raise ValueError
         try:
             assert(MINIMUM_NUM_GRAPH <= self.num_graph <= MAXIMUM_NUM_GRAPH)

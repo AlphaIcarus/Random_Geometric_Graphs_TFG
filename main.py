@@ -17,6 +17,7 @@ TODOs generales:
         
     - TODO a partir de los atributos del dataframe, presentarlos de manera de tabla y ver el crecimiento (IMPORTANTE)
     - TODO en multicapa, estamos guardando en cada grafo sencillo los mismos parámetros una y orta vez (n, x, r). Quizá hay una manera de mejorarlo
+    - TODO Consultar una manera de guardar los plt.show() de manera local (archivos png)
 """
 
 # Packages
@@ -30,31 +31,6 @@ from config import Config
 # Functions
 
 ## Utils    
-def drawRandomGeometricGraph(Gph: Graph) -> None:
-    """TODO: Rehacer el código para imprimir más bonito
-    
-    Imprimeix per pantalla el graf aleatori geomètric
-    
-    Codi importat i adaptat des d'el web de NetworkX: 
-    https://networkx.org/documentation/stable/auto_examples/drawing/plot_random_geometric_graph.html"""
-    
-    G = Gph.graph
-    pos = nx.get_node_attributes(G, "pos")
-
-    plt.figure(figsize=(8, 8))
-    nx.draw_networkx_edges(G, pos, edgelist=G.edges(), alpha=0.4)
-    nx.draw_networkx_nodes(
-        G,
-        pos,
-        nodelist=G.nodes(),
-        node_size=20,
-        cmap=plt.cm.Reds_r,
-    )
-
-    plt.xlim(-0.05, Gph.x + 0.05)   
-    plt.ylim(-0.05, Gph.x + 0.05)   
-    plt.axis("off")
-    plt.show()
     
 ## Main utilities
 def config() -> None:
@@ -133,7 +109,14 @@ def config() -> None:
 # Tests
 
 def parameterEvolution():
+    """
+    Test que, donades les condicions d'entrada del programa, obté un estudi de com evoluciona el graf multicapa depenent del número de capes.
+    """
     
+    collection = [Graph(i,conf.n,conf.r_ini,conf.x) for i in range(conf.num_graph)]
+    multilayer = MultilayerGraph(collection)
+    
+    graphics = multilayer.getGraphics()
     return
 
 def radiusTest():
@@ -158,8 +141,8 @@ def main() -> None:
         print("Dataframe for multilayer graph:")
         print(df)
         
-        # union.saveXML("Prueba1", True)
-        drawRandomGeometricGraph(union)
+        # Progression
+        union.seeProgression(rang=5)
         
     elif conf.test == "001":
         parameterEvolution()
