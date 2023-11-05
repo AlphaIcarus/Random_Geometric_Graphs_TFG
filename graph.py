@@ -4,6 +4,7 @@ import pandas as pd
 import math
 import xml.etree.ElementTree as et
 import matplotlib.pyplot as plt
+import numpy as np
 
 # Required by networkx.random_geometric_graph
 import scipy
@@ -131,13 +132,15 @@ class Graph:
     
     # Graph printing
     
-    def drawRandomGeometricGraph(self) -> None:
-        """TODO: Rehacer el código para imprimir más bonito
-        
+    def drawRandomGeometricGraph(self) -> plt.Figure:
+        """
         Imprimeix per pantalla el graf aleatori geomètric
         
         Codi importat i adaptat des d'el web de NetworkX: 
-        https://networkx.org/documentation/stable/auto_examples/drawing/plot_random_geometric_graph.html"""
+        https://networkx.org/documentation/stable/auto_examples/drawing/plot_random_geometric_graph.html
+        
+        - TODO: Rehacer el código para imprimir más bonito
+        """
         
         G = self.graph
         pos = nx.get_node_attributes(G, "pos")
@@ -155,7 +158,9 @@ class Graph:
         plt.xlim(-0.05, self.x + 0.05)   
         plt.ylim(-0.05, self.x + 0.05)   
         plt.axis("off")
-        plt.show()
+        
+        figure = plt.gcf()
+        return figure
 
 class MultilayerGraph(Graph):
 
@@ -164,7 +169,7 @@ class MultilayerGraph(Graph):
         Constructora de la classe. Construeix, a partir d'un conjunt de grafs aleatoris multicapa,
         un graf aleatori geomètric multicapa.
         
-        TODO la implementación de las adyacencias no funciona
+        TODO Cambiar que el multicapa se haga en otro método a parte, no en la constructora
         """
         self.graphList: list[Graph] = graphs
 
@@ -175,12 +180,26 @@ class MultilayerGraph(Graph):
         self.r = graphs[0].r                                    # Radius of area to get adjacencies
 
         adjacencies = set()
-        for i in range(len(graphs)):
-            adjacencies = adjacencies.union(set(graphs[i].graph.edges())) 
+        for i in range(len(self.graphList)):
+            adjacencies = adjacencies.union(set(self.graphList[i].graph.edges())) 
 
         self.graph.add_edges_from((adjacencies))
         return
     
+    def buildMultilayer(self) -> None:
+        """
+        Mètode per contruir el graf multicapa. El resultat es guarda a l'atribut self.graph
+        """
+        self.graph = self.graphList[0].graph.copy()
+        
+        adjacencies = set()
+        for i in range(len(self.graphList)):
+            adjacencies = adjacencies.union(set(self.graphList[i].graph.edges())) 
+
+        self.graph.add_edges_from((adjacencies))
+        
+        return
+        
     # Getters
     
     def getInfo(self) -> pd.DataFrame:
@@ -201,41 +220,70 @@ class MultilayerGraph(Graph):
             
         return pd.concat(df)
     
-    def seeProgression(self, rang: int) -> list:
+    def seeProgression(self, rang: int) -> None:
         """
-        Mètode per obtenir imatges de com evoluciona el graf multicapa en diferents estats
+        Mètode per obtenir imatges de com evoluciona el graf multicapa en diferents estats.
+        També obtenim un dataframe amb la informació dels grafs intermitjos.
         
         - TODO actualmente se generan uno a uno, hay que obtener todas las imágenes de grafo y luego imprimirlas
         """
         
         inter = rang
-        g = self.graphList[0].graph.copy()
+        self.graph = self.graphList[0].graph.copy()
+        
+        self.drawRandomGeometricGraph()     # Estat inicial 
         
         for graph in self.graphList:
             # Add new edges
-            g.add_edges_from(set(graph.graph.edges()))
+            self.graph.add_edges_from(set(graph.graph.edges()))
             inter -= 1
             if inter == 0:
+                # Get dataframe
+                
                 #Print graph
                 self.drawRandomGeometricGraph()
                 inter = rang
         
-        pass
+        return
     
-    def getGraphics(self) -> list:
+    def radiusProgression(self, r_ini: float, r_fin: float, r_add: float):
+        """
+        Mètode que, donat un radi inicial, un radi final i un valor, on r_ini + r_add <= r_fin, Va imprimint el graf multicapa fent servir
+        els valors intermitjos de la progressió [r_ini, r_ini + r_add, r_ini + r_add*2, ... , r_ini + r_add*N <= r_fin] per N màxima.
+        
+        - TODO no funciona encara
+        """
+        
+        # Còpies dels valors originals per restaurar
+        graphs = self.graphList.copy()
+        ml = self.graph.copy()
+        plots = []
+                
+        all_nodes = map(nx.get_node_attributes, self.graphList) # We get the nodes of every graph
+        for radius in np.arange(r_ini,r_fin,r_add):
+            """Aconseguim els grafs nous donats pel radi radius, construim el multicapa nou i el dibuixem"""
+            self.graphList = [nx.random_geometric_graph(n=self.n, pos=all_nodes[i]["coords"], radius=radius) for i in range(0,len(self.graphList))]
+            self.buildMultilayer()
+            plots.append(self.drawRandomGeometricGraph())
+
+        # Recuperem les dades anteriors
+        self.graphList = graphs
+        self.graph = ml
+        
+        return plots
+    
+    def getGraphics(self) -> dict:
         """
         Mètode per obtenir els gràfics de com varien els atributs del graf multicapa, de manera progressiva.
         
         Els gràfics que s'obtenen venen donats per les propietats que volem obtenir del graf (donat a getInfo)
+        
+        - TODO: Los gráficos que no funcionan son 6 (radius), 7 (diameter)
         """
-        
         # Paràmetres que volem estudiar la seva progressió
-        
         g = self.graphList[0].graph.copy()
-        # g.clear_edges()                         # Esto puede ser que no sea necesario
         
         layers = [i for i in range(1,len(self.graphList)+1)]
-        
         order = []
         size = []
         is_connected = []
@@ -254,12 +302,12 @@ class MultilayerGraph(Graph):
             
             # We add the new attributes of the i-th step graph
             
-            degrees = list(self.graph.degree)
+            degrees = [degree[1] for degree in g.degree]
             min_d = min(degrees)
             max_d = max(degrees)
             
-            largest_component_nodes = max(nx.connected_components(self.graph), key=len)
-            largest_component = self.graph.subgraph(largest_component_nodes)
+            largest_component_nodes = max(nx.connected_components(g), key=len)
+            largest_component = g.subgraph(largest_component_nodes)
             largest_c_diameter = nx.diameter(largest_component)
             
             order.append(g.order())
@@ -267,7 +315,7 @@ class MultilayerGraph(Graph):
             is_connected.append(1 if nx.is_connected(g) else 0)
             number_connected_components.append(nx.number_connected_components(g))
             largest_component_diameter.append(largest_c_diameter)
-            radius.append(nx.radius(g) if nx.is_connected(g) else math.triangle_numberinf)
+            radius.append(nx.radius(g) if nx.is_connected(g) else math.inf)
             diameter.append(nx.diameter(g) if nx.is_connected(g) else math.inf)
             is_eulerian.append(nx.is_eulerian(g))
             min_degree.append(min_d)
@@ -282,30 +330,28 @@ class MultilayerGraph(Graph):
         plt.show()
         """
         
-        axs = [plt.subplots()[1] for _ in range(13)]   # Generamos los plots necesarios (plot por atributo)
+        axs = [plt.subplots()[1] for _ in range(12)]   # Generamos los plots necesarios (plot por atributo)
         
         # Pruebas
         # axs[0].plot(layers, order)
         
         # Dictionary with everything (Tengo que arreglar muchas cosas)
         plots = {
-            "Order": axs[0].plot(layers, order),
-            "Size": axs[1].plot(layers, size),
-            "Is_connected": axs[2].plot(layers, is_connected),          
-            "Connected_components": axs[3].plot(layers, number_connected_components),
-            "Largest_component_diameter": axs[4].plot(layers, largest_component_diameter),
-            "Radius": axs[5].plot(layers, radius),
-            "Diameter": axs[6].plot(layers, diameter),
-            "Is_eulerian": axs[7].plot(layers, is_eulerian),
-            "Min_degree": axs[8].plot(layers, min_degree),
-            "Max_degree": axs[9].plot(layers, max_degree),
-            "Average_Clustering_Coefficient": axs[10].plot(layers, average_clustering_coefficient),
-            "Triangle_number": axs[11].plot(layers, triangle_number),
-            "K-core_graph": None  # Aquí me gustaría imprimir el grafo K-core directamente
+            "Order": axs[0].plot(layers, order),                                                        # 1
+            "Size": axs[1].plot(layers, size),                                                          # 2
+            "Is_connected": axs[2].plot(layers, is_connected),                                          # 3
+            "Connected_components": axs[3].plot(layers, number_connected_components),                   # 4
+            "Largest_component_diameter": axs[4].plot(layers, largest_component_diameter),              # 5
+            "Radius": axs[5].plot(layers, radius),                                                      # 6
+            "Diameter": axs[6].plot(layers, diameter),                                                  # 7
+            "Is_eulerian": axs[7].plot(layers, is_eulerian),                                            # 8
+            "Min_degree": axs[8].plot(layers, min_degree),                                              # 9 
+            "Max_degree": axs[9].plot(layers, max_degree),                                              # 10
+            "Average_Clustering_Coefficient": axs[10].plot(layers, average_clustering_coefficient),     # 11
+            "Triangle_number": axs[11].plot(layers, triangle_number),                                   # 12
+            "K-core_graph": nx.k_core(g)                                                                # 13
         }
-        
-        plt.show()
-        
+                
         return plots
     
     def printInfo(self) -> None:

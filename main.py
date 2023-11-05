@@ -7,7 +7,7 @@ TODOs generales:
     - TODO Paralelizar la generación de los grafos, así como la obtención de su información
     
     
-    - TODO obtener el grafo unión en diferenets fases de la unión (grafo con 2, con 10, con 50...) y ver cómo se conectan (memoria)
+    - TODO [HECHO] obtener el grafo unión en diferenets fases de la unión (grafo con 2, con 10, con 50...) y ver cómo se conectan (memoria)
     - TODO ver la progresiçon de las propiedades dada la variación de los radios (r), comparando con las que tendría el grafo con una sola capa
         y después dependiendo del número de capas (crecimiento lineal? exponencial?) -> Primero parámetros del grafo (r) y luego del multilayer
         (núm capas)
@@ -16,7 +16,12 @@ TODOs generales:
         crecimiento)
         
     - TODO a partir de los atributos del dataframe, presentarlos de manera de tabla y ver el crecimiento (IMPORTANTE)
+    - TODO hacer una constructora de multicapa que te devuelva una lista con la progresión de un atributo concreto (o todos)
+    
+    [MEJORAS EN EL CÓDIGO]
     - TODO en multicapa, estamos guardando en cada grafo sencillo los mismos parámetros una y orta vez (n, x, r). Quizá hay una manera de mejorarlo
+    
+    [EXTRA]
     - TODO Consultar una manera de guardar los plt.show() de manera local (archivos png)
 """
 
@@ -30,7 +35,16 @@ from config import Config
 
 # Functions
 
-## Utils    
+## Utils
+
+def drawKCore(kcore) -> plt.Figure:
+        """
+        Imprimeix per pantalla el k-core donat.
+        
+        - TODO: NO FUNCIONA HACER DE NUEVO
+        """
+        
+        return
     
 ## Main utilities
 def config() -> None:
@@ -39,6 +53,8 @@ def config() -> None:
     Carrega a l'objecte de la classe Config els paràmetres per executar l'script.\n
     """
     global conf
+    global collection
+    global multilayer
     
     parser = ap.ArgumentParser(
         prog="main.py",
@@ -104,23 +120,40 @@ def config() -> None:
     args = parser.parse_args()
     conf = Config(args)
     
+    collection = [Graph(i,conf.n,conf.r_ini,conf.x) for i in range(conf.num_graph)]
+    multilayer = MultilayerGraph(collection)
+    
     return
 
 # Tests
 
-def parameterEvolution():
+def multilayerEvolution(n: int) -> None:
     """
-    Test que, donades les condicions d'entrada del programa, obté un estudi de com evoluciona el graf multicapa depenent del número de capes.
+    Test que, donat un valor enter, obté la progressió del graf unió i imprimeix el graf cada n capes afegides.
+    Serveix per veure com evoluciona gràficament, la imatge es va carregant de vèrtexos.s
     """
-    
-    collection = [Graph(i,conf.n,conf.r_ini,conf.x) for i in range(conf.num_graph)]
-    multilayer = MultilayerGraph(collection)
-    
-    graphics = multilayer.getGraphics()
+    multilayer.seeProgression(n)
     return
 
-def radiusTest():
+def parameterEvolution() -> None:   # Funciona menos el k_core
+    """
+    Test que, donades les condicions d'entrada del programa, imprimeix per pantalla un estudi de com evoluciona 
+    el graf multicapa depenent del número de capes.
     
+    - TODO retornar també un dataframe amb la informació (una columna per atribut)
+    """
+    plots = multilayer.getGraphics()
+    #k_core = drawRandomGeometricGraph(plots["K-core_graph"])
+    
+    return
+
+def radiusEvolution() -> None:
+    """
+    Test que, donat el rang inicial, final i els intervals donats per la configuració global, obtenim diferents grafs amb els mateixos
+    nodes però amb diferents adjacències, determinades pel nou radi
+    """
+
+    plots = multilayer.radiusProgression(conf.r_ini, conf.r_fin, conf.radius_add)
     return
 
 # Main
@@ -133,6 +166,8 @@ def main() -> None:
     config()
        
     # Script
+    opts = [c for c in conf.test]
+    
     if conf.test == "000":  # Default execution (no test, only random code)
         
         collection = [Graph(i,conf.n,conf.r_ini,conf.x) for i in range(conf.num_graph)]
@@ -144,16 +179,17 @@ def main() -> None:
         # Progression
         union.seeProgression(rang=5)
         
-    elif conf.test == "001":
+    if opts[0] == '1':
+        n: int = 10
+        multilayerEvolution(n)
+    
+    if opts[1] == '1':
+        radiusEvolution()
+        
+    if opts[2] == '1':
         parameterEvolution()
-    
-    elif conf.test == "010":
-        radiusTest()
-    
-    # Comment zone
-    """
-    
-    """
+        
+    plt.show()
     return
 
 # Main script
