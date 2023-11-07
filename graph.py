@@ -12,6 +12,12 @@ import scipy
 # Things to do:
 # TODO añadir documentación detallada sobre los parámetros y funciones
 
+# Utils
+
+def drawGraph():
+    
+    return
+
 class Graph:
 
     def __init__(self, id: int, n: int, r: float, x: float):
@@ -30,13 +36,7 @@ class Graph:
     
     # Getters
     
-    def getKCore(self) -> nx.graph:
-        """
-        Mètode per obtenir el graf k-core. Aquest graf és igual que l'original, però cada note té grau k (amb k màxima).
-        """
-        return nx.k_core(self.graph)
-    
-    def getInfo(self) -> pd.DataFrame:
+    def getInfo(self, index: int = 0) -> pd.DataFrame:
         """
         TODO doc
         TODO Puede ser interesante guardar la informacón como atributo en la propia clase
@@ -50,7 +50,7 @@ class Graph:
         
         # Connected components
         connected_components = sorted(nx.connected_components(self.graph), key=len, reverse=True)   #Sorted from largest to smallest
-        cc_sizes = map(len, connected_components)                                                   #Sorted from largest to smallest
+        cc_sizes = map(len, connected_components)                                                   #Tamanys de les components connexes
         
         largest_component_nodes = max(nx.connected_components(self.graph), key=len)
         largest_component = self.graph.subgraph(largest_component_nodes)
@@ -68,12 +68,12 @@ class Graph:
             "Min_degree":min_degree,
             "Max_degree":max_degree,
             "Average_Clustering_Coefficient":nx.average_clustering(self.graph),
-            "Triangle_number":None, # Esto devuelve un mapping, hay que hacerlo de alguna otra forma
+            "Triangle_number": nx.triangles(self.graph, 0), # Esto devuelve un mapping, hay que hacerlo de alguna otra forma
             # Tamaños de componentes connexas
             # K-core (grafo donde todos los nodos tienen grado k, k máxima) --> se cosigue con k_core de NetworkX
                 # Lo haremos en una función diferente y lo invocamos fuera
         }
-        frame = pd.DataFrame(index=[0], data=dct)
+        frame = pd.DataFrame(index=[index], data=dct)
         return frame
 
     def printInfo(self) -> None:
@@ -164,26 +164,21 @@ class Graph:
 
 class MultilayerGraph(Graph):
 
-    def __init__(self, graphs: list[Graph]):
+    def __init__(self, graphs: list[Graph], default_build: bool = True):
         """
         Constructora de la classe. Construeix, a partir d'un conjunt de grafs aleatoris multicapa,
         un graf aleatori geomètric multicapa.
-        
-        TODO Cambiar que el multicapa se haga en otro método a parte, no en la constructora
         """
         self.graphList: list[Graph] = graphs
 
-        self.graph = graphs[0].graph.copy()                     # Graph itself
+        self.graph = None                                       # Graph itself
         self.id = graphs[0].id                                  # Identifier of the graph
         self.n = graphs[0].n                                    # Number of nodes of the graph
         self.x = graphs[0].x                                    # Longitude/Amplitude of the map
         self.r = graphs[0].r                                    # Radius of area to get adjacencies
-
-        adjacencies = set()
-        for i in range(len(self.graphList)):
-            adjacencies = adjacencies.union(set(self.graphList[i].graph.edges())) 
-
-        self.graph.add_edges_from((adjacencies))
+        
+        if default_build:
+            self.buildMultilayer()
         return
     
     def buildMultilayer(self) -> None:
@@ -197,8 +192,14 @@ class MultilayerGraph(Graph):
             adjacencies = adjacencies.union(set(self.graphList[i].graph.edges())) 
 
         self.graph.add_edges_from((adjacencies))
-        
         return
+        
+    def emptyMultilayer(self) -> None:
+        """
+        Mètode per buidar el paràmetre self.graph
+        """
+        self.graph = None
+        return    
         
     # Getters
     
@@ -220,6 +221,8 @@ class MultilayerGraph(Graph):
             
         return pd.concat(df)
     
+    # Testers
+    
     def seeProgression(self, rang: int) -> None:
         """
         Mètode per obtenir imatges de com evoluciona el graf multicapa en diferents estats.
@@ -230,8 +233,7 @@ class MultilayerGraph(Graph):
         
         inter = rang
         self.graph = self.graphList[0].graph.copy()
-        
-        self.drawRandomGeometricGraph()     # Estat inicial 
+        plots = [self.drawRandomGeometricGraph()]       # Estat inicial 
         
         for graph in self.graphList:
             # Add new edges
@@ -241,10 +243,10 @@ class MultilayerGraph(Graph):
                 # Get dataframe
                 
                 #Print graph
-                self.drawRandomGeometricGraph()
+                plots.append(self.drawRandomGeometricGraph())
                 inter = rang
         
-        return
+        return plots
     
     def radiusProgression(self, r_ini: float, r_fin: float, r_add: float):
         """
@@ -330,7 +332,8 @@ class MultilayerGraph(Graph):
         plt.show()
         """
         
-        axs = [plt.subplots()[1] for _ in range(12)]   # Generamos los plots necesarios (plot por atributo)
+        plot_num: int = 12                                   # Número de gràfics a generar
+        axs = [plt.subplots()[1] for _ in range(plot_num)]   # Generamos los plots necesarios (plot por atributo)
         
         # Pruebas
         # axs[0].plot(layers, order)
@@ -353,23 +356,3 @@ class MultilayerGraph(Graph):
         }
                 
         return plots
-    
-    def printInfo(self) -> None:
-        """
-        Imprimeix per pantalla el les dades del graf unió, així com les dades de cadascun dels grafs dels quals parteix.
-        """
-        df = self.getInfo()
-        print(df)
-        return
-    
-    # Data save / load
-    
-    def saveXML(self, fileName: str | None, mode: bool) -> None:
-        """
-        Mètode per guardar a memòria les dades de l'objecte.
-        """
-        Graph.saveXML(self, fileName, mode)
-        for i in range(len(self.graphList)):
-            Graph.saveXML(self.graphList[i], fileName + f'_Graph{i}', mode)
-        
-        return

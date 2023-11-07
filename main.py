@@ -41,7 +41,7 @@ def drawKCore(kcore) -> plt.Figure:
         """
         Imprimeix per pantalla el k-core donat.
         
-        - TODO: NO FUNCIONA HACER DE NUEVO
+        - TODO: NO FUNCIONA HACER DE NUEVOgraphs
         """
         
         return
@@ -50,7 +50,7 @@ def drawKCore(kcore) -> plt.Figure:
 def config() -> None:
     """
     Funció per fer configuracions previes a l'execució de l'script.\n
-    Carrega a l'objecte de la classe Config els paràmetres per executar l'script.\n
+    Carrega a l'objecte de la classe Config els paràmetres per executar l'script.
     """
     global conf
     global collection
@@ -132,7 +132,7 @@ def multilayerEvolution(n: int) -> None:
     Test que, donat un valor enter, obté la progressió del graf unió i imprimeix el graf cada n capes afegides.
     Serveix per veure com evoluciona gràficament, la imatge es va carregant de vèrtexos.s
     """
-    multilayer.seeProgression(n)
+    plots = multilayer.seeProgression(rang=n)
     return
 
 def parameterEvolution() -> None:   # Funciona menos el k_core
@@ -144,7 +144,6 @@ def parameterEvolution() -> None:   # Funciona menos el k_core
     """
     plots = multilayer.getGraphics()
     #k_core = drawRandomGeometricGraph(plots["K-core_graph"])
-    
     return
 
 def radiusEvolution() -> None:
@@ -152,7 +151,6 @@ def radiusEvolution() -> None:
     Test que, donat el rang inicial, final i els intervals donats per la configuració global, obtenim diferents grafs amb els mateixos
     nodes però amb diferents adjacències, determinades pel nou radi
     """
-
     plots = multilayer.radiusProgression(conf.r_ini, conf.r_fin, conf.radius_add)
     return
 
@@ -167,17 +165,10 @@ def main() -> None:
        
     # Script
     opts = [c for c in conf.test]
-    
     if conf.test == "000":  # Default execution (no test, only random code)
-        
-        collection = [Graph(i,conf.n,conf.r_ini,conf.x) for i in range(conf.num_graph)]
-        union = MultilayerGraph(collection)
-        df = union.getInfo()
+        df = Graph.getInfo(multilayer)
         print("Dataframe for multilayer graph:")
         print(df)
-        
-        # Progression
-        union.seeProgression(rang=5)
         
     if opts[0] == '1':
         n: int = 10
