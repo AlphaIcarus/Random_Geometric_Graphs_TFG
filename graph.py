@@ -14,23 +14,31 @@ import scipy
 
 # Utils
 
-def drawGraph():
+def drawGraph(xValues: list, yValues: list, title: str):
+    """
+    Funció per generar un gràfic fent servir Matplotlib: Per cada valor i-èssim de xValues i yValues, es denota un punt
+    al gràfic.
+    """
+    assert(xValues == yValues)
     
-    return
+    fig = None
+        
+    return fig
 
 class Graph:
 
-    def __init__(self, id: int, n: int, r: float, x: float):
+    def __init__(self, id: int, n: int, r: float, x: float, positions = None):
         """
-        Constructora de la classe Graph
+        Constructora de la classe Graph. Es poden aportar les posicions per defecte.
         """
         self.id = id                                            # Identifier of the graph
         self.n = n                                              # Number of nodes of the graph
         self.x = x                                              # Longitude/Amplitude of the map
-        self.r = r                                              # Radius of area to get adjacencies       
-
-        pos = {i: (random.uniform(0, x), random.uniform(0, x)) for i in range(n)}
-        self.graph = nx.random_geometric_graph(n=n, radius=r, pos=pos)   # Graph itself 
+        self.r = r                                              # Radius of area to get adjacencies  
+             
+        if positions is not None:
+            positions = {i: (random.uniform(0, x), random.uniform(0, x)) for i in range(n)}
+        self.graph = nx.random_geometric_graph(n=n, radius=r, pos=positions)   # Graph itself 
     
         return
     
@@ -38,9 +46,8 @@ class Graph:
     
     def getInfo(self, index: int = 0) -> pd.DataFrame:
         """
-        TODO doc
-        TODO Puede ser interesante guardar la informacón como atributo en la propia clase
-        TODO Rellenar el dataframme con toda la info de interés
+        Mètode per obtenir 
+        - TODO Rellenar el dataframme con toda la info de interés
         """
         
         # Degrees
@@ -75,15 +82,6 @@ class Graph:
         }
         frame = pd.DataFrame(index=[index], data=dct)
         return frame
-
-    def printInfo(self) -> None:
-        """
-        Printa per terminal la informació relacionada amb el graf
-        """
-        frame = self.getInfo()
-        print(frame)
-        
-        return
     
     # Data save / load
     
@@ -223,9 +221,9 @@ class MultilayerGraph(Graph):
     
     # Testers
     
-    def seeProgression(self, rang: int) -> None:
+    def seeProgression(self, rang: int) -> (pd.DataFrame, [plt.Figure]):
         """
-        Mètode per obtenir imatges de com evoluciona el graf multicapa en diferents estats.
+        Mètode per obtenir un data frame i imatges de com evoluciona el graf multicapa en diferents estats.
         També obtenim un dataframe amb la informació dels grafs intermitjos.
         
         - TODO actualmente se generan uno a uno, hay que obtener todas las imágenes de grafo y luego imprimirlas
@@ -233,46 +231,55 @@ class MultilayerGraph(Graph):
         
         inter = rang
         self.graph = self.graphList[0].graph.copy()
-        plots = [self.drawRandomGeometricGraph()]       # Estat inicial 
+        
+        plots = [self.drawRandomGeometricGraph()]               # Estat inicial 
+        df = Graph.getInfo(self)                                # Data frame
         
         for graph in self.graphList:
             # Add new edges
             self.graph.add_edges_from(set(graph.graph.edges()))
             inter -= 1
             if inter == 0:
-                # Get dataframe
-                
-                #Print graph
-                plots.append(self.drawRandomGeometricGraph())
+                df = pd.concat(df, Graph.getInfo(self))         # Get dataframe
+                plots.append(self.drawRandomGeometricGraph())   # Print graph
                 inter = rang
         
-        return plots
+        return df, plots
     
     def radiusProgression(self, r_ini: float, r_fin: float, r_add: float):
         """
         Mètode que, donat un radi inicial, un radi final i un valor, on r_ini + r_add <= r_fin, Va imprimint el graf multicapa fent servir
         els valors intermitjos de la progressió [r_ini, r_ini + r_add, r_ini + r_add*2, ... , r_ini + r_add*N <= r_fin] per N màxima.
         
-        - TODO no funciona encara
+        - TODO no funciona, tengo que generar los grafos de la colección de nuevo con sus posiciones, con cada radio intermedio,
+            y luego generar el multicapa.
         """
+        graphs = self.graphList.copy()                                                                      # Còpies dels valors originals per restaurar
+        pos = [nx.get_node_attributes(self.graphList[i].graph, "pos") for i in range(len(self.graphList))]  # We get the nodes of every graph
+        self.emptyMultilayer()                                                                              # Buidem el multicapa
         
-        # Còpies dels valors originals per restaurar
-        graphs = self.graphList.copy()
-        ml = self.graph.copy()
+        # Informació a retornar
         plots = []
-                
-        all_nodes = map(nx.get_node_attributes, self.graphList) # We get the nodes of every graph
-        for radius in np.arange(r_ini,r_fin,r_add):
+        df = []
+        
+        for radius in np.arange(r_ini,r_fin,r_add, dtype=float):
             """Aconseguim els grafs nous donats pel radi radius, construim el multicapa nou i el dibuixem"""
-            self.graphList = [nx.random_geometric_graph(n=self.n, pos=all_nodes[i]["coords"], radius=radius) for i in range(0,len(self.graphList))]
+            print(radius)
+            self.graphList = [Graph(i,graphs[0].n,radius,graphs[0].x, pos[i]) for i in range(len(self.graphList))]
             self.buildMultilayer()
+            
             plots.append(self.drawRandomGeometricGraph())
-
+            df.append(Graph.getInfo(self))
+            
+            self.emptyMultilayer()
+            
+        df = pd.concat(df)                         # Construim el dataframe
         # Recuperem les dades anteriors
         self.graphList = graphs
-        self.graph = ml
+        self.buildMultilayer()
         
-        return plots
+        print(df)
+        return df, plots
     
     def getGraphics(self) -> dict:
         """
@@ -281,6 +288,7 @@ class MultilayerGraph(Graph):
         Els gràfics que s'obtenen venen donats per les propietats que volem obtenir del graf (donat a getInfo)
         
         - TODO: Los gráficos que no funcionan son 6 (radius), 7 (diameter)
+        - TODO: Cambiar el funcionamiento para usar emptyMultilayer y buildMultilayer
         """
         # Paràmetres que volem estudiar la seva progressió
         g = self.graphList[0].graph.copy()
@@ -303,7 +311,6 @@ class MultilayerGraph(Graph):
             g.add_edges_from((set(graph.graph.edges())))
             
             # We add the new attributes of the i-th step graph
-            
             degrees = [degree[1] for degree in g.degree]
             min_d = min(degrees)
             max_d = max(degrees)
@@ -326,20 +333,10 @@ class MultilayerGraph(Graph):
             triangle_number.append(sum(nx.triangles(g).values()))
             
         # Creación de gráficos 
-        """
-        fig, ax = plt.subplots()
-        ax.plot([1, 2, 3, 4], [1, 2, 0, 0.5])
-        plt.show()
-        """
-        
         plot_num: int = 12                                   # Número de gràfics a generar
-        axs = [plt.subplots()[1] for _ in range(plot_num)]   # Generamos los plots necesarios (plot por atributo)
+        axs = [plt.subplots()[1] for _ in range(plot_num)]   # Generem els gràfics
         
-        # Pruebas
-        # axs[0].plot(layers, order)
-        
-        # Dictionary with everything (Tengo que arreglar muchas cosas)
-        plots = {
+        plots = {                                            # Dictionary with everything (Tengo que arreglar muchas cosas)
             "Order": axs[0].plot(layers, order),                                                        # 1
             "Size": axs[1].plot(layers, size),                                                          # 2
             "Is_connected": axs[2].plot(layers, is_connected),                                          # 3

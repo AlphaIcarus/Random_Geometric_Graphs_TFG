@@ -8,7 +8,7 @@ TODOs generales:
     
     
     - TODO [HECHO] obtener el grafo unión en diferenets fases de la unión (grafo con 2, con 10, con 50...) y ver cómo se conectan (memoria)
-    - TODO ver la progresiçon de las propiedades dada la variación de los radios (r), comparando con las que tendría el grafo con una sola capa
+    - TODO ver la progresión de las propiedades dada la variación de los radios (r), comparando con las que tendría el grafo con una sola capa
         y después dependiendo del número de capas (crecimiento lineal? exponencial?) -> Primero parámetros del grafo (r) y luego del multilayer
         (núm capas)
         
@@ -20,6 +20,7 @@ TODOs generales:
     
     [MEJORAS EN EL CÓDIGO]
     - TODO en multicapa, estamos guardando en cada grafo sencillo los mismos parámetros una y orta vez (n, x, r). Quizá hay una manera de mejorarlo
+        · Hay que cambiar el atributo graphList para guardar únicamente el grafo de NetworkX y no una lista de Graph    
     
     [EXTRA]
     - TODO Consultar una manera de guardar los plt.show() de manera local (archivos png)
@@ -121,7 +122,7 @@ def config() -> None:
     conf = Config(args)
     
     collection = [Graph(i,conf.n,conf.r_ini,conf.x) for i in range(conf.num_graph)]
-    multilayer = MultilayerGraph(collection)
+    multilayer = MultilayerGraph(collection, default_build=True)
     
     return
 
@@ -132,7 +133,7 @@ def multilayerEvolution(n: int) -> None:
     Test que, donat un valor enter, obté la progressió del graf unió i imprimeix el graf cada n capes afegides.
     Serveix per veure com evoluciona gràficament, la imatge es va carregant de vèrtexos.s
     """
-    plots = multilayer.seeProgression(rang=n)
+    df, plots = multilayer.seeProgression(rang=n)
     return
 
 def parameterEvolution() -> None:   # Funciona menos el k_core
@@ -151,7 +152,7 @@ def radiusEvolution() -> None:
     Test que, donat el rang inicial, final i els intervals donats per la configuració global, obtenim diferents grafs amb els mateixos
     nodes però amb diferents adjacències, determinades pel nou radi
     """
-    plots = multilayer.radiusProgression(conf.r_ini, conf.r_fin, conf.radius_add)
+    df, plots = multilayer.radiusProgression(conf.r_ini, conf.r_fin, conf.radius_add)
     return
 
 # Main
@@ -160,12 +161,10 @@ def main() -> None:
     """
     Main script
     """
-    # Configuració global
-    config()
+    config()                                            # Configuració global
        
-    # Script
-    opts = [c for c in conf.test]
-    if conf.test == "000":  # Default execution (no test, only random code)
+    opts = [c for c in conf.test]                       # Script
+    if conf.test == "000":                              # Default execution (no test, only random code)
         df = Graph.getInfo(multilayer)
         print("Dataframe for multilayer graph:")
         print(df)
@@ -183,5 +182,4 @@ def main() -> None:
     plt.show()
     return
 
-# Main script
-main()
+main()                                                  # Main script
