@@ -30,21 +30,46 @@ TODOs generales:
 import matplotlib.pyplot as plt
 import networkx as nx
 import argparse as ap
+import numpy as np
+import os
 
 from graph import Graph, MultilayerGraph
 from config import Config
+
+from datetime import datetime
 
 # Functions
 
 ## Utils
 
+def drawAndStoreGraphic(xvalues: list, yvalues: list, xlabel: str, ylabel: str, title: str) -> plt.Figure:
+    """
+    Funció d'utilitat que, donats uns valors pels eixos, títols i títol de figura, retorna la figura resultant.
+    """
+    
+    fig, ax = plt.subplots()
+    ax.plot(xvalues, yvalues)
+
+    ax.set(xlabel=xlabel, ylabel=ylabel, title=title)
+    ax.grid() # Optional
+
+    now = str(datetime.now())
+    dir = "./test_output/" + now
+    
+    try:
+        os.mkdir(dir)
+    except(FileExistsError):
+        pass
+    
+    fig.savefig(dir + "/" + title + ".png") # Save figure
+    return fig
+
 def drawKCore(kcore) -> plt.Figure:
         """
         Imprimeix per pantalla el k-core donat.
         
-        - TODO: NO FUNCIONA HACER DE NUEVOgraphs
+        - TODO: NO FUNCIONA HACER DE NUEVO
         """
-        
         return
     
 ## Main utilities
@@ -56,6 +81,7 @@ def config() -> None:
     global conf
     global collection
     global multilayer
+    global name_of_tests
     
     parser = ap.ArgumentParser(
         prog="main.py",
@@ -133,7 +159,11 @@ def multilayerEvolution(n: int) -> None:
     Test que, donat un valor enter, obté la progressió del graf unió i imprimeix el graf cada n capes afegides.
     Serveix per veure com evoluciona gràficament, la imatge es va carregant de vèrtexos.s
     """
+    test: str = f"Multilayer evolution adding {n} layers"
+    
     df, plots = multilayer.seeProgression(rang=n)
+    
+    # plt.show()
     return
 
 def parameterEvolution() -> None:   # Funciona menos el k_core
@@ -143,16 +173,51 @@ def parameterEvolution() -> None:   # Funciona menos el k_core
     
     - TODO retornar també un dataframe amb la informació (una columna per atribut)
     """
+    test: str = f"Parameter evolution. View properties of multilayer every time a layer is added"
+    
     plots = multilayer.getGraphics()
     #k_core = drawRandomGeometricGraph(plots["K-core_graph"])
+    
+    # plt.show()
     return
 
 def radiusEvolution() -> None:
     """
-    Test que, donat el rang inicial, final i els intervals donats per la configuració global, obtenim diferents grafs amb els mateixos
-    nodes però amb diferents adjacències, determinades pel nou radi
+    Test que, donat el rang inicial, final i els intervals donats per la configuració global, obtenim el dataframe amb les propietats
+    del graf per cada radi i-èssim de l'interval [r_ini, r_fin, +r_add]
     """
-    df, plots = multilayer.radiusProgression(conf.r_ini, conf.r_fin, conf.radius_add)
+    test: str = f"Radius evolution. see progression of multilayer properties by adding layers of i-th radius in [{conf.r_ini},{conf.r_fin},+{conf.radius_add}] "
+    
+    df = multilayer.radiusProgression(conf.r_ini, conf.r_fin, conf.radius_add)
+    print(df)
+    
+    xlabel = "Radius values"
+    xvalues = np.arange(conf.r_ini, conf.r_fin, conf.radius_add)
+    
+    size_evol_plot = drawAndStoreGraphic(xvalues=xvalues, yvalues=df["Size"], 
+                                         xlabel=xlabel, ylabel="Size of multilayer", test=test)
+    connection_evol_plot = drawAndStoreGraphic(xvalues=xvalues, yvalues=df["Is_connected"], 
+                                         xlabel=xlabel, ylabel="Is connected?", test=test)
+    number_cc_evol_plot = drawAndStoreGraphic(xvalues=xvalues, yvalues=df["Connected_components"], 
+                                         xlabel=xlabel, ylabel="Is connected?", test=test)
+    largest_component_diameter_plot = drawAndStoreGraphic(xvalues=xvalues, yvalues=df["Largest_component_diameter"], 
+                                         xlabel=xlabel, ylabel="Largest_component_diameter", test=test)
+    radius_evol_plot = drawAndStoreGraphic(xvalues=xvalues, yvalues=df["Radius"], 
+                                         xlabel=xlabel, ylabel="Radius of graph", test=test)
+    diameter_evol_plot = drawAndStoreGraphic(xvalues=xvalues, yvalues=df["Diameter"], 
+                                         xlabel=xlabel, ylabel="Diameter of graph", test=test)
+    eulerian_evol_plot = drawAndStoreGraphic(xvalues=xvalues, yvalues=df["Is_eulerian"], 
+                                         xlabel=xlabel, ylabel="Is eulerian?", test=test)
+    min_degree_evol_plot = drawAndStoreGraphic(xvalues=xvalues, yvalues=df["Min_degree"], 
+                                         xlabel=xlabel, ylabel="Minimum degree in graph", test=test)
+    max_degree_evol_plot = drawAndStoreGraphic(xvalues=xvalues, yvalues=df["Max_degree"], 
+                                         xlabel=xlabel, ylabel="Maximum degree in graph", test=test)
+    acc_evol_plot = drawAndStoreGraphic(xvalues=xvalues, yvalues=df["Average_Clustering_Coefficient"], 
+                                         xlabel=xlabel, ylabel="Average clustering coefficient in graph", test=test)
+    triangle_number_evol_plot = drawAndStoreGraphic(xvalues=xvalues, yvalues=df["Triangle_number"], 
+                                         xlabel=xlabel, ylabel="Triangle number of graph", test=test)
+    
+    # plt.show()
     return
 
 # Main
@@ -162,12 +227,14 @@ def main() -> None:
     Main script
     """
     config()                                            # Configuració global
-       
     opts = [c for c in conf.test]                       # Script
+    
     if conf.test == "000":                              # Default execution (no test, only random code)
         df = Graph.getInfo(multilayer)
         print("Dataframe for multilayer graph:")
         print(df)
+        
+        plot = multilayer.drawRandomGeometricGraph()
         
     if opts[0] == '1':
         n: int = 10
@@ -179,7 +246,6 @@ def main() -> None:
     if opts[2] == '1':
         parameterEvolution()
         
-    plt.show()
     return
 
 main()                                                  # Main script

@@ -6,6 +6,9 @@ import xml.etree.ElementTree as et
 import matplotlib.pyplot as plt
 import numpy as np
 
+from copy import deepcopy
+from time import time
+
 # Required by networkx.random_geometric_graph
 import scipy
 
@@ -246,7 +249,7 @@ class MultilayerGraph(Graph):
         
         return df, plots
     
-    def radiusProgression(self, r_ini: float, r_fin: float, r_add: float):
+    def radiusProgression(self, r_ini: float, r_fin: float, r_add: float) -> pd.DataFrame:
         """
         Mètode que, donat un radi inicial, un radi final i un valor, on r_ini + r_add <= r_fin, Va imprimint el graf multicapa fent servir
         els valors intermitjos de la progressió [r_ini, r_ini + r_add, r_ini + r_add*2, ... , r_ini + r_add*N <= r_fin] per N màxima.
@@ -254,23 +257,18 @@ class MultilayerGraph(Graph):
         - TODO no funciona, tengo que generar los grafos de la colección de nuevo con sus posiciones, con cada radio intermedio,
             y luego generar el multicapa.
         """
-        graphs = self.graphList.copy()                                                                      # Còpies dels valors originals per restaurar
+        graphs = self.graphList.copy()                                                                   # Còpies dels valors originals per restaurar
         pos = [nx.get_node_attributes(self.graphList[i].graph, "pos") for i in range(len(self.graphList))]  # We get the nodes of every graph
         self.emptyMultilayer()                                                                              # Buidem el multicapa
         
-        # Informació a retornar
-        plots = []
-        df = []
+        df = [] # Informació a retornar
         
         for radius in np.arange(r_ini,r_fin,r_add, dtype=float):
             """Aconseguim els grafs nous donats pel radi radius, construim el multicapa nou i el dibuixem"""
             print(radius)
             self.graphList = [Graph(i,graphs[0].n,radius,graphs[0].x, pos[i]) for i in range(len(self.graphList))]
             self.buildMultilayer()
-            
-            plots.append(self.drawRandomGeometricGraph())
             df.append(Graph.getInfo(self))
-            
             self.emptyMultilayer()
             
         df = pd.concat(df)                         # Construim el dataframe
@@ -278,8 +276,7 @@ class MultilayerGraph(Graph):
         self.graphList = graphs
         self.buildMultilayer()
         
-        print(df)
-        return df, plots
+        return df
     
     def getGraphics(self) -> dict:
         """
