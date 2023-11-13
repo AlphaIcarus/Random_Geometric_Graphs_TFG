@@ -42,9 +42,11 @@ from datetime import datetime
 
 ## Utils
 
+now = str(datetime.now()).replace(":",".")      # Necessari pel format de les carpetes
+
 def drawAndStoreGraphic(xvalues: list, yvalues: list, xlabel: str, ylabel: str, title: str) -> plt.Figure:
     """
-    Funció d'utilitat que, donats uns valors pels eixos, títols i títol de figura, retorna la figura resultant.
+    Funció d'utilitat que, donats uns valors pels eixos, títols i títol de figura, retorna la figura resultant i la guarda a memòria.
     """
     
     fig, ax = plt.subplots()
@@ -53,15 +55,15 @@ def drawAndStoreGraphic(xvalues: list, yvalues: list, xlabel: str, ylabel: str, 
     ax.set(xlabel=xlabel, ylabel=ylabel, title=title)
     ax.grid() # Optional
 
-    now = str(datetime.now())
-    dir = "./test_output/" + now
+    dir = ".\\test_output\\" + now
     
     try:
         os.mkdir(dir)
     except(FileExistsError):
         pass
     
-    fig.savefig(dir + "/" + title + ".png") # Save figure
+    fig.savefig(dir + "\\" + ylabel + ".png") # Save figure
+    # fig.savefig(ylabel + ".png") # Save figure
     return fig
 
 def drawKCore(kcore) -> plt.Figure:
@@ -186,7 +188,7 @@ def radiusEvolution() -> None:
     Test que, donat el rang inicial, final i els intervals donats per la configuració global, obtenim el dataframe amb les propietats
     del graf per cada radi i-èssim de l'interval [r_ini, r_fin, +r_add]
     """
-    test: str = f"Radius evolution. see progression of multilayer properties by adding layers of i-th radius in [{conf.r_ini},{conf.r_fin},+{conf.radius_add}] "
+    test: str = f"Radius evol in multilayer for i-th radius [{conf.r_ini},{conf.r_fin},+{conf.radius_add}] "
     
     df = multilayer.radiusProgression(conf.r_ini, conf.r_fin, conf.radius_add)
     print(df)
@@ -195,27 +197,27 @@ def radiusEvolution() -> None:
     xvalues = np.arange(conf.r_ini, conf.r_fin, conf.radius_add)
     
     size_evol_plot = drawAndStoreGraphic(xvalues=xvalues, yvalues=df["Size"], 
-                                         xlabel=xlabel, ylabel="Size of multilayer", test=test)
+                                         xlabel=xlabel, ylabel="Size of multilayer", title=test)
     connection_evol_plot = drawAndStoreGraphic(xvalues=xvalues, yvalues=df["Is_connected"], 
-                                         xlabel=xlabel, ylabel="Is connected?", test=test)
+                                         xlabel=xlabel, ylabel="Is connected", title=test)
     number_cc_evol_plot = drawAndStoreGraphic(xvalues=xvalues, yvalues=df["Connected_components"], 
-                                         xlabel=xlabel, ylabel="Is connected?", test=test)
+                                         xlabel=xlabel, ylabel="Number of Connected components", title=test)
     largest_component_diameter_plot = drawAndStoreGraphic(xvalues=xvalues, yvalues=df["Largest_component_diameter"], 
-                                         xlabel=xlabel, ylabel="Largest_component_diameter", test=test)
+                                         xlabel=xlabel, ylabel="Largest_component_diameter", title=test)
     radius_evol_plot = drawAndStoreGraphic(xvalues=xvalues, yvalues=df["Radius"], 
-                                         xlabel=xlabel, ylabel="Radius of graph", test=test)
+                                         xlabel=xlabel, ylabel="Radius of graph", title=test)
     diameter_evol_plot = drawAndStoreGraphic(xvalues=xvalues, yvalues=df["Diameter"], 
-                                         xlabel=xlabel, ylabel="Diameter of graph", test=test)
+                                         xlabel=xlabel, ylabel="Diameter of graph", title=test)
     eulerian_evol_plot = drawAndStoreGraphic(xvalues=xvalues, yvalues=df["Is_eulerian"], 
-                                         xlabel=xlabel, ylabel="Is eulerian?", test=test)
+                                         xlabel=xlabel, ylabel="Is eulerian", title=test)
     min_degree_evol_plot = drawAndStoreGraphic(xvalues=xvalues, yvalues=df["Min_degree"], 
-                                         xlabel=xlabel, ylabel="Minimum degree in graph", test=test)
+                                         xlabel=xlabel, ylabel="Minimum degree in graph", title=test)
     max_degree_evol_plot = drawAndStoreGraphic(xvalues=xvalues, yvalues=df["Max_degree"], 
-                                         xlabel=xlabel, ylabel="Maximum degree in graph", test=test)
+                                         xlabel=xlabel, ylabel="Maximum degree in graph", title=test)
     acc_evol_plot = drawAndStoreGraphic(xvalues=xvalues, yvalues=df["Average_Clustering_Coefficient"], 
-                                         xlabel=xlabel, ylabel="Average clustering coefficient in graph", test=test)
+                                         xlabel=xlabel, ylabel="Average clustering coefficient in graph", title=test)
     triangle_number_evol_plot = drawAndStoreGraphic(xvalues=xvalues, yvalues=df["Triangle_number"], 
-                                         xlabel=xlabel, ylabel="Triangle number of graph", test=test)
+                                         xlabel=xlabel, ylabel="Triangle number of graph", title=test)
     
     # plt.show()
     return

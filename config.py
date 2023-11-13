@@ -22,7 +22,7 @@ class Config:
     Classe que reuneix els atributs per executar l'script principal
     """
 
-    def __init__(self, args: Namespace | None):
+    def __init__(self, args: Namespace):
         """Constructora per la classe de configuració.
         
         Defineix els paràmetres necessaris per executar l'script.
