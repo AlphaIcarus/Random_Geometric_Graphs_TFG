@@ -18,6 +18,11 @@ TODOs generales:
     - TODO a partir de los atributos del dataframe, presentarlos de manera de tabla y ver el crecimiento (IMPORTANTE)
     - TODO hacer una constructora de multicapa que te devuelva una lista con la progresión de un atributo concreto (o todos)
     
+    REUNIÓN 13 NOV
+    
+    - TODO Mirar el número de vértices del K-core (con k máxima) y mirar la evolución de la K
+    - TODO Hacer varias ejecuciones (2, 5, 10...) y hacer la media en los valores de los dataframes
+    
     [MEJORAS EN EL CÓDIGO]
     - TODO en multicapa, estamos guardando en cada grafo sencillo los mismos parámetros una y orta vez (n, x, r). Quizá hay una manera de mejorarlo
         · Hay que cambiar el atributo graphList para guardar únicamente el grafo de NetworkX y no una lista de Graph    
@@ -80,7 +85,6 @@ def savePlots(fig: plt.Figure, fileName: str) -> None:
 def drawKCore(kcore) -> plt.Figure:
         """
         Imprimeix per pantalla el k-core donat.
-        
         - TODO: NO FUNCIONA HACER DE NUEVO
         """
         return
