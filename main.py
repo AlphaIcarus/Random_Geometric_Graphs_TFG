@@ -66,6 +66,17 @@ def drawAndStoreGraphic(xvalues: list, yvalues: list, xlabel: str, ylabel: str, 
     # fig.savefig(ylabel + ".png") # Save figure
     return fig
 
+def savePlots(fig: plt.Figure, fileName: str) -> None:
+    """Funció que guarda un graf en una ubicació determinada per folderPath"""
+    dir = ".\\test_output\\" + now
+    try:
+        os.mkdir(dir)
+    except(FileExistsError):
+        pass
+    
+    fig.savefig(dir + "\\" + fileName + ".png") # Save figure
+    return
+
 def drawKCore(kcore) -> plt.Figure:
         """
         Imprimeix per pantalla el k-core donat.
@@ -165,7 +176,7 @@ def multilayerEvolution(n: int) -> None:
     
     df, plots = multilayer.seeProgression(rang=n)
     
-    # plt.show()
+    plt.show()
     return
 
 def parameterEvolution() -> None:   # Funciona menos el k_core
@@ -178,9 +189,10 @@ def parameterEvolution() -> None:   # Funciona menos el k_core
     test: str = f"Parameter evolution. View properties of multilayer every time a layer is added"
     
     plots = multilayer.getGraphics()
+    
     #k_core = drawRandomGeometricGraph(plots["K-core_graph"])
     
-    # plt.show()
+    plt.show()
     return
 
 def radiusEvolution() -> None:
@@ -239,7 +251,7 @@ def main() -> None:
         plot = multilayer.drawRandomGeometricGraph()
         
     if opts[0] == '1':
-        n: int = 10
+        n: int = 2
         multilayerEvolution(n)
     
     if opts[1] == '1':

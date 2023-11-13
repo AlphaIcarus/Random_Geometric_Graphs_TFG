@@ -191,17 +191,18 @@ class MultilayerGraph(Graph):
         self.graph = self.graphList[0].graph.copy()
         
         plots = [self.drawRandomGeometricGraph()]               # Estat inicial 
-        df = Graph.getInfo(self)                                # Data frame
+        df = [Graph.getInfo(self)]                                # Data frame
         
         for graph in self.graphList:
             # Add new edges
             self.graph.add_edges_from(set(graph.graph.edges()))
             inter -= 1
             if inter == 0:
-                df = pd.concat(df, Graph.getInfo(self))         # Get dataframe
+                df.append(Graph.getInfo(self))
                 plots.append(self.drawRandomGeometricGraph())   # Print graph
                 inter = rang
         
+        df = pd.concat(df)
         return df, plots
     
     def radiusProgression(self, r_ini: float, r_fin: float, r_add: float) -> pd.DataFrame:
@@ -301,7 +302,7 @@ class MultilayerGraph(Graph):
             "Max_degree": axs[9].plot(layers, max_degree),                                              # 10
             "Average_Clustering_Coefficient": axs[10].plot(layers, average_clustering_coefficient),     # 11
             "Triangle_number": axs[11].plot(layers, triangle_number),                                   # 12
-            "K-core_graph": nx.k_core(g)                                                                # 13
+            #"K-core_graph": nx.k_core(g)                                                                # 13
         }
                 
         return plots
