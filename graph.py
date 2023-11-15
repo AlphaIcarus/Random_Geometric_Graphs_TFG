@@ -186,19 +186,18 @@ class MultilayerGraph(Graph):
         
         - TODO actualmente se generan uno a uno, hay que obtener todas las imágenes de grafo y luego imprimirlas
         """
-        
         inter = rang
         self.graph = self.graphList[0].graph.copy()
         
         plots = [self.drawRandomGeometricGraph()]               # Estat inicial 
-        df = [Graph.getInfo(self)]                                # Data frame
+        df = [Graph.getInfo(self)]                              # Data frame
         
-        for graph in self.graphList:
+        for graph in self.graphList[1:]:
             # Add new edges
             self.graph.add_edges_from(set(graph.graph.edges()))
             inter -= 1
             if inter == 0:
-                df.append(Graph.getInfo(self))
+                df.append(Graph.getInfo(self))                  # Get dataframe
                 plots.append(self.drawRandomGeometricGraph())   # Print graph
                 inter = rang
         
@@ -234,13 +233,12 @@ class MultilayerGraph(Graph):
         
         return df
     
-    def getGraphics(self) -> dict:
+    def getParameterProgression(self) -> dict:
         """
         Mètode per obtenir els gràfics de com varien els atributs del graf multicapa, de manera progressiva.
         
         Els gràfics que s'obtenen venen donats per les propietats que volem obtenir del graf (donat a getInfo)
         
-        - TODO: Los gráficos que no funcionan son 6 (radius), 7 (diameter)
         - TODO: Cambiar el funcionamiento para usar emptyMultilayer y buildMultilayer
         """
         # Paràmetres que volem estudiar la seva progressió
@@ -302,7 +300,6 @@ class MultilayerGraph(Graph):
             "Max_degree": axs[9].plot(layers, max_degree),                                              # 10
             "Average_Clustering_Coefficient": axs[10].plot(layers, average_clustering_coefficient),     # 11
             "Triangle_number": axs[11].plot(layers, triangle_number),                                   # 12
-            #"K-core_graph": nx.k_core(g)                                                                # 13
         }
                 
         return plots
