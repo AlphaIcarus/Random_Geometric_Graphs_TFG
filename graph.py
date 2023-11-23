@@ -218,9 +218,8 @@ class MultilayerGraph(Graph):
         
         df = [] # Informació a retornar
         
-        for radius in np.arange(r_ini,r_fin,r_add, dtype=float):
+        for radius in np.arange(r_ini,r_fin,r_add):
             """Aconseguim els grafs nous donats pel radi radius, construim el multicapa nou i el dibuixem"""
-            print(radius)
             self.graphList = [Graph(i,graphs[0].n,radius,graphs[0].x, pos[i]) for i in range(len(self.graphList))]
             self.buildMultilayer()
             df.append(Graph.getInfo(self))
@@ -233,13 +232,13 @@ class MultilayerGraph(Graph):
         
         return df
     
-    def getParameterProgression(self) -> dict:
+    def getParameterProgression(self):
         """
         Mètode per obtenir els gràfics de com varien els atributs del graf multicapa, de manera progressiva.
         
         Els gràfics que s'obtenen venen donats per les propietats que volem obtenir del graf (donat a getInfo)
         
-        - TODO: Cambiar el funcionamiento para usar emptyMultilayer y buildMultilayer
+        - TODO: Cambiar el funcionamiento para usar emptyMultilayer y buildMultilayer, y devolver el dataset con la info por capas
         """
         # Paràmetres que volem estudiar la seva progressió
         g = self.graphList[0].graph.copy()
@@ -285,21 +284,35 @@ class MultilayerGraph(Graph):
             
         # Creación de gráficos 
         plot_num: int = 12                                   # Número de gràfics a generar
-        axs = [plt.subplots()[1] for _ in range(plot_num)]   # Generem els gràfics
+        figs_axs = [plt.subplots() for _ in range(plot_num)]   # Generem els gràfics
         
         plots = {                                            # Dictionary with everything (Tengo que arreglar muchas cosas)
-            "Order": axs[0].plot(layers, order),                                                        # 1
-            "Size": axs[1].plot(layers, size),                                                          # 2
-            "Is_connected": axs[2].plot(layers, is_connected),                                          # 3
-            "Connected_components": axs[3].plot(layers, number_connected_components),                   # 4
-            "Largest_component_diameter": axs[4].plot(layers, largest_component_diameter),              # 5
-            "Radius": axs[5].plot(layers, radius),                                                      # 6
-            "Diameter": axs[6].plot(layers, diameter),                                                  # 7
-            "Is_eulerian": axs[7].plot(layers, is_eulerian),                                            # 8
-            "Min_degree": axs[8].plot(layers, min_degree),                                              # 9 
-            "Max_degree": axs[9].plot(layers, max_degree),                                              # 10
-            "Average_Clustering_Coefficient": axs[10].plot(layers, average_clustering_coefficient),     # 11
-            "Triangle_number": axs[11].plot(layers, triangle_number),                                   # 12
+            "Order": figs_axs[0][1].plot(layers, order),                                                        # 1
+            "Size": figs_axs[1][1].plot(layers, size),                                                          # 2
+            "Is_connected": figs_axs[2][1].plot(layers, is_connected),                                          # 3
+            "Connected_components": figs_axs[3][1].plot(layers, number_connected_components),                   # 4
+            "Largest_component_diameter": figs_axs[4][1].plot(layers, largest_component_diameter),              # 5
+            "Radius": figs_axs[5][1].plot(layers, radius),                                                      # 6
+            "Diameter": figs_axs[6][1].plot(layers, diameter),                                                  # 7
+            "Is_eulerian": figs_axs[7][1].plot(layers, is_eulerian),                                            # 8
+            "Min_degree": figs_axs[8][1].plot(layers, min_degree),                                              # 9 
+            "Max_degree": figs_axs[9][1].plot(layers, max_degree),                                              # 10
+            "Average_Clustering_Coefficient": figs_axs[10][1].plot(layers, average_clustering_coefficient),     # 11
+            "Triangle_number": figs_axs[11][1].plot(layers, triangle_number),                                   # 12
         }
+        tags = [
+            "Order",
+            "Size",
+            "Is_connected",
+            "Connected_components",
+            "Largest_component_diameter",
+            "Radius",
+            "Diameter",
+            "Is_eulerian",
+            "Min_degree",
+            "Max_degree",
+            "Average_Clustering_Coefficient",
+            "Triangle_number"
+        ]
                 
-        return plots
+        return tags, [fig for (fig, _) in figs_axs]
