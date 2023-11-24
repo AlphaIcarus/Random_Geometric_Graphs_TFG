@@ -231,7 +231,7 @@ class MultilayerGraph(Graph):
         
         return df
     
-    def getParameterProgression(self):
+    def getParameterProgression(self) -> pd.DataFrame:
         """
         Mètode per obtenir els gràfics de com varien els atributs del graf multicapa, de manera progressiva.
         
@@ -239,79 +239,15 @@ class MultilayerGraph(Graph):
         
         - TODO: Cambiar el funcionamiento para usar emptyMultilayer y buildMultilayer, y devolver el dataset con la info por capas
         """
-        # Paràmetres que volem estudiar la seva progressió
-        g = self.graphList[0].graph.copy()
-        
-        layers = [i for i in range(1,len(self.graphList)+1)]
-        order = []
-        size = []
-        is_connected = []
-        number_connected_components = []
-        largest_component_diameter = []
-        radius = []
-        diameter = []
-        is_eulerian = []
-        min_degree = []
-        max_degree = []
-        average_clustering_coefficient = []
-        triangle_number = []
+        #New mode
+        self.emptyMultilayer()
+        self.graph.add_nodes_from(self.graphList[0].graph.nodes)
+        df = []
         
         for graph in self.graphList:
-            g.add_edges_from((set(graph.graph.edges())))
-            
-            # We add the new attributes of the i-th step graph
-            degrees = [degree[1] for degree in g.degree]
-            min_d = min(degrees)
-            max_d = max(degrees)
-            
-            largest_component_nodes = max(nx.connected_components(g), key=len)
-            largest_component = g.subgraph(largest_component_nodes)
-            largest_c_diameter = nx.diameter(largest_component)
-            
-            order.append(g.order())
-            size.append(g.size())
-            is_connected.append(1 if nx.is_connected(g) else 0)
-            number_connected_components.append(nx.number_connected_components(g))
-            largest_component_diameter.append(largest_c_diameter)
-            radius.append(nx.radius(g) if nx.is_connected(g) else math.inf)
-            diameter.append(nx.diameter(g) if nx.is_connected(g) else math.inf)
-            is_eulerian.append(nx.is_eulerian(g))
-            min_degree.append(min_d)
-            max_degree.append(max_d)
-            average_clustering_coefficient.append(nx.average_clustering(g))
-            triangle_number.append(sum(nx.triangles(g).values()))
-            
-        # Creación de gráficos 
-        plot_num: int = 12                                   # Número de gràfics a generar
-        figs_axs = [plt.subplots() for _ in range(plot_num)]   # Generem els gràfics
+            self.graph.add_edges_from((set(graph.graph.edges())))
+            df.append(Graph.getInfo(self.graph))
         
-        plots = {                                            # Dictionary with everything (Tengo que arreglar muchas cosas)
-            "Order": figs_axs[0][1].plot(layers, order),                                                        # 1
-            "Size": figs_axs[1][1].plot(layers, size),                                                          # 2
-            "Is_connected": figs_axs[2][1].plot(layers, is_connected),                                          # 3
-            "Connected_components": figs_axs[3][1].plot(layers, number_connected_components),                   # 4
-            "Largest_component_diameter": figs_axs[4][1].plot(layers, largest_component_diameter),              # 5
-            "Radius": figs_axs[5][1].plot(layers, radius),                                                      # 6
-            "Diameter": figs_axs[6][1].plot(layers, diameter),                                                  # 7
-            "Is_eulerian": figs_axs[7][1].plot(layers, is_eulerian),                                            # 8
-            "Min_degree": figs_axs[8][1].plot(layers, min_degree),                                              # 9 
-            "Max_degree": figs_axs[9][1].plot(layers, max_degree),                                              # 10
-            "Average_Clustering_Coefficient": figs_axs[10][1].plot(layers, average_clustering_coefficient),     # 11
-            "Triangle_number": figs_axs[11][1].plot(layers, triangle_number),                                   # 12
-        }
-        tags = [
-            "Order",
-            "Size",
-            "Is_connected",
-            "Connected_components",
-            "Largest_component_diameter",
-            "Radius",
-            "Diameter",
-            "Is_eulerian",
-            "Min_degree",
-            "Max_degree",
-            "Average_Clustering_Coefficient",
-            "Triangle_number"
-        ]
-                
-        return tags, [fig for (fig, _) in figs_axs]
+        df = pd.concat(df)
+        self.buildMultilayer()     
+        return df
