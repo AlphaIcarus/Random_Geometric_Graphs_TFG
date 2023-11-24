@@ -80,8 +80,7 @@ class Graph:
             "Average_Clustering_Coefficient":nx.average_clustering(self.graph),
             "Triangle_number": nx.triangles(self.graph, 0), # Esto devuelve un mapping, hay que hacerlo de alguna otra forma
             # Tamaños de componentes connexas
-            # K-core (grafo donde todos los nodos tienen grado k, k máxima) --> se cosigue con k_core de NetworkX
-                # Lo haremos en una función diferente y lo invocamos fuera
+            "K_core_order": nx.k_core(self.graph).order()
         }
         frame = pd.DataFrame(index=[index], data=dct)
         return frame

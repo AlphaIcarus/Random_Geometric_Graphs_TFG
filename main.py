@@ -31,7 +31,7 @@ import numpy as np
 import os
 import pandas as pd
 from collections import defaultdict
-from joblib import Parallel, delayed
+
 
 from graph import Graph, MultilayerGraph
 from config import Config
@@ -108,7 +108,7 @@ def drawAndStoreMultipleLinearGraphic(xvalues: list, yvalues: list[list], xlabel
     """
     fig, ax = plt.subplots()
     
-    [ax.plot(xvalues, yvalues[i], label="Order: " + str(n_values[i])) for i in len(yvalues)]
+    [ax.plot(xvalues, yvalues[i], label="Order: " + str(n_values[i])) for i in range(len(yvalues))]
      
     ax.set(xlabel=xlabel, ylabel=ylabel, title=title)
     ax.grid()
@@ -407,8 +407,7 @@ def test2() -> None:
     """
     test: str = f"Radius evolution for different orders of multilayer"
     
-    # n_values = [1000,2000,3000,4000,5000,10000,20000]     # Valors de l'ordre del graf
-    n_values = [1000,1000]
+    n_values = [1000,2000,3000,4000,5000,10000,20000]     # Valors de l'ordre del graf
     
     print(1)
     dfs = []
