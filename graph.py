@@ -69,12 +69,12 @@ class Graph:
         dct = {
             "Order":self.graph.order(),
             "Size":self.graph.size(),
-            "Is_connected":nx.is_connected(self.graph),
+            "Is_connected":1 if nx.is_connected(self.graph) else 0,
             "Connected_components":nx.number_connected_components(self.graph),
             "Largest_component_diameter":largest_c_diameter,
             "Radius":nx.radius(self.graph) if nx.is_connected(self.graph) else math.inf,
             "Diameter":nx.diameter(self.graph) if nx.is_connected(self.graph) else math.inf,
-            "Is_eulerian":nx.is_eulerian(self.graph),
+            "Is_eulerian":1 if nx.is_eulerian(self.graph) else 0,
             "Min_degree":min_degree,
             "Max_degree":max_degree,
             "Average_Clustering_Coefficient":nx.average_clustering(self.graph),
@@ -241,12 +241,12 @@ class MultilayerGraph(Graph):
         """
         #New mode
         self.emptyMultilayer()
-        self.graph.add_nodes_from(self.graphList[0].graph.nodes)
+        self.graph = self.graphList[0].graph
         df = []
         
         for graph in self.graphList:
             self.graph.add_edges_from((set(graph.graph.edges())))
-            df.append(Graph.getInfo(self.graph))
+            df.append(Graph.getInfo(self))
         
         df = pd.concat(df)
         self.buildMultilayer()     

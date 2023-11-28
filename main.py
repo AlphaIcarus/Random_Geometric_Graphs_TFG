@@ -31,7 +31,7 @@ import numpy as np
 import os
 import pandas as pd
 from collections import defaultdict
-from joblib import Parallel
+# from joblib import Parallel
 
 
 from graph import Graph, MultilayerGraph
@@ -43,17 +43,19 @@ from time import time
 # Parameters
 
 now = str(datetime.now()).replace(":",".")      # Necessari pel format de les carpetes
-n_values = [1000,2000]                          # Valors dels ordres del test 2
+n_values = [1000,2000,3000]                     # Valors dels ordres del test 2
 tdir = '/' if os.name == 'posix' else '\\'
 
 # Auxiliar functions
 
 ## Dataframe Utils
 
-def dataframeMean(dfList: [pd.DataFrame]) -> pd.DataFrame:
+def dataframeMean(dfList: list[pd.DataFrame]) -> pd.DataFrame:
     """
     Funció auxiliar que, donada una llista de dataframes amb les mateixes columnes i el mateix número de files i columnes,
     retorna un dataframe on cada valor df[j][k] és la mitjana de tots els valors i-èssim df_i[j][k]
+    
+    - TODO tenemos que vigilar con atributos como is_eulerian, al hacer la media devuelve valores diferentes a 0 o 1
     """
     nDataFrames = conf.num_copies   # Number of dataframes
     df = dfList[0]                  # Final dataframe
@@ -329,9 +331,9 @@ def radiusEvolution() -> None:
     # df = multilayer.radiusProgression(conf.r_ini, conf.r_fin, conf.radius_add)
     # print(df)
     
-    dfs = Parallel(n_jobs=-1)(multilayer[i].radiusProgression(conf.r_ini, conf.r_fin, conf.radius_add) for i in range(conf.num_copies))
+    # dfs = Parallel(n_jobs=-1)(multilayer[i].radiusProgression(conf.r_ini, conf.r_fin, conf.radius_add) for i in range(conf.num_copies))
     
-    # dfs = [multilayer[i].radiusProgression(conf.r_ini, conf.r_fin, conf.radius_add) for i in range(conf.num_copies)]
+    dfs = [multilayer[i].radiusProgression(conf.r_ini, conf.r_fin, conf.radius_add) for i in range(conf.num_copies)]
     df = dataframeMean(dfs)
       
     xlabel = "Radius values"
@@ -411,8 +413,6 @@ def test2() -> None:
     return
     """
     test: str = f"Radius evolution for different orders of multilayer"
-    
-    n_values = [1000,2000,3000,4000,5000,10000,20000]     # Valors de l'ordre del graf
     
     print(1)
     dfs = []
@@ -496,7 +496,7 @@ def test3() -> None:
     """
     test: str = f"Radius evolution for different orders of multilayer"
     
-    n_values = [1000,2000,3000,4000,5000,10000,20000]     # Valors de l'ordre del graf
+    # n_values = [1000,2000,3000,4000,5000,10000,20000]     # Valors de l'ordre del graf
     dfs = []
     
     for n in n_values:
@@ -506,8 +506,11 @@ def test3() -> None:
             ml = MultilayerGraph(collection, default_build=True)
             parameterDF = ml.getParameterProgression()
             rawDfs.append(parameterDF)
+        print(type(rawDfs), len(rawDfs))
+        print()
+        print(rawDfs)
         dfMean = dataframeMean(rawDfs)
-        dfs.append(dataframeMean(dfMean))
+        dfs.append(dfMean)
         
     xlabel = "Number of layers"
     xvalues = range(1,conf.num_graph+1)
