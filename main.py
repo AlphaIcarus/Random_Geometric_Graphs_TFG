@@ -566,11 +566,15 @@ def main() -> None:
         """
         Execució per defecte. S'executa quan volem fer petites proves sobre el codi
         """
-        radiusEvolution()
-        
+        multilayer[0].drawRandomGeometricGraph()
+    if conf.test == "0":
+        """
+        Test 0.
+        """
+        pass
     if conf.test == '1':
         """
-        Test 1. Veiem la progressió dels atributs del multicapa variant valors del radi.
+        Test 1.
         """
         test1()
     if conf.test == '2':

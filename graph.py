@@ -5,9 +5,9 @@ import math
 import xml.etree.ElementTree as et
 import matplotlib.pyplot as plt
 import numpy as np
+import os
 
-from copy import deepcopy
-from time import time
+from datetime import datetime
 
 # Required by networkx.random_geometric_graph
 import scipy
@@ -114,8 +114,21 @@ class Graph:
         plt.ylim(-0.05, self.x + 0.05)   
         plt.axis("off")
         
-        figure = plt.gcf()
-        return figure
+        fig = plt.gcf()
+        tdir = '/' if os.name == 'posix' else '\\'
+        name = "Random_geometric_graph"
+        now = str(datetime.now()).replace(":",".")
+        
+        dir = f".{tdir}test_output{tdir}" + now
+    
+        try:
+            os.mkdir(dir)
+        except(FileExistsError):
+            pass
+        
+        fig.savefig(dir + tdir + name + ".png") # Save figure
+        plt.close()     # Figure closing due to overload
+        return
 
 class MultilayerGraph(Graph):
 
