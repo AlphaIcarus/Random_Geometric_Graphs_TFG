@@ -1,26 +1,16 @@
 """
 TODOs generales:
-    - TODO Pensar en la estructura de ejecución general del main() para que se pueda adaptar al bash
     - TODO Documentar todas las funciones, con sus @param, @return y la función que hacen (mirar online documentación en python completa)
     - TODO Rellenar con todos los paquetes necesarios para pip install en execute.sh
-    
-    - TODO ver la progresión de las propiedades dada la variación de los radios (r), comparando con las que tendría el grafo con una sola capa
-        y después dependiendo del número de capas (crecimiento lineal? exponencial?) -> Primero parámetros del grafo (r) y luego del multilayer
-        (núm capas)
-        
-        Vamos de 0.01 a 0.1 en r y vemos los cambios (intervalos de 0.005) y después hacer zoom en una zona si hay un cambio brusco (cambio en el
-        crecimiento)
+    - TODO Mirar los pseudocódigos del main y corregirlos (o cogerlos del latex)
     
     REUNIÓN 13 NOV
     
     - TODO Mirar el número de vértices del K-core (con k máxima) y mirar la evolución de la K
-    - TODO Hacer varias ejecuciones (2, 5, 10...) y hacer la media en los valores de los dataframes
     
     [MEJORAS EN EL CÓDIGO]
     - TODO en multicapa, estamos guardando en cada grafo sencillo los mismos parámetros una y orta vez (n, x, r). Quizá hay una manera de mejorarlo
         · Hay que cambiar el atributo graphList para guardar únicamente el grafo de NetworkX y no una lista de Graph    
-    
-    [EXTRA]
 """
 
 # Packages
@@ -43,12 +33,41 @@ from time import time
 # Parameters
 
 now = str(datetime.now()).replace(":",".")      # Necessari pel format de les carpetes
-n_values = [1000,2000,3000]                     # Valors dels ordres del test 2
-tdir = '/' if os.name == 'posix' else '\\'
+n_values = [1000,2000,3000,4000,5000,10000]     # Valors dels ordres del test 2
+tdir = '/' if os.name == 'posix' else '\\'      # Barra espaiadora
+dir = f".{tdir}test_output{tdir}" + now         # Direcció de sortida dels tests
 
 # Auxiliar functions
 
 ## Dataframe Utils
+
+def saveDataFrames(dfs: list[pd.DataFrame]) -> None:
+    """Funció auxiliar per guardar una sèrie de data frames en memòria persistent. Fem servir el format CSV (Comma Separated Value).
+
+    Args:
+        dfs (list[pd.DataFrame]): Llista de data frames.
+    """
+    os.makedirs(dir, exist_ok=True)  
+    [dfs[i].to_csv(dir + tdir + f"dataframe{i}") for i in range(len(dfs))]
+    return
+
+def loadDataFrames(path: str) -> list[pd.DataFrame]:
+    """Funció auxiliar per carregar una sèrie de data frames de memòria persistent. Fem servir el format CSV (Comma Separated Value).
+    
+    Args:
+        path (str): Path absolut o relatiu al fitxer a carregar
+
+    Returns:
+        list[pd.DataFrame]: Llista de data frames amb els valors de memòria.
+    """
+    csvs: list[str] = filter(str.endswith(".csv") == True ,os.listdir(path))
+    
+    dfs: list[pd.DataFrame] = []
+    for csv in csvs:
+        df = pd.read_csv(dir + tdir + csv)
+        dfs.append(df)
+        
+    return dfs
 
 def dataframeMean(dfList: list[pd.DataFrame]) -> pd.DataFrame:
     """
@@ -93,13 +112,8 @@ def drawAndStoreGraphic(xvalues: list, yvalues: list, xlabel: str, ylabel: str, 
     ax.set(xlabel=xlabel, ylabel=ylabel, title=title)
     ax.grid()
     ax.set_xlim(left=0)
-    dir = f".{tdir}test_output{tdir}" + now
     
-    try:
-        os.mkdir(dir)
-    except(FileExistsError):
-        pass
-    
+    os.makedirs(dir, exist_ok=True)  
     fig.savefig(dir + tdir + ylabel + ".png") # Save figure
     plt.close()     # Figure closing due to overload
     return fig
@@ -119,13 +133,8 @@ def drawAndStoreMultipleLinearGraphic(xvalues: list, yvalues: list[list], xlabel
     ax.legend()
     ax.set_xlim(left=0)
     
-    dir = ".\\test_output\\" + now
-    try:
-        os.mkdir(dir)
-    except(FileExistsError):
-        pass
+    os.makedirs(dir, exist_ok=True)  
     fig.savefig(dir + "\\" + ylabel + ".png")   # Save figure
-    
     plt.close()                                 # Figure closing due to overload
     return fig
 
@@ -134,11 +143,7 @@ def savePlots(fig: plt.Figure, fileName: str) -> None:
     Funció auxiliar que guarda un gràfic en una ubicació determinada per folderPath
     """
     dir = ".\\test_output\\" + now
-    try:
-        os.mkdir(dir)
-    except(FileExistsError):
-        pass
-    
+    os.makedirs(dir, exist_ok=True)  
     fig.savefig(dir + "\\" + fileName + ".png") # Save figure
     return
 
@@ -246,14 +251,12 @@ def config() -> None:
         default=1,
         dest="num_copies"
     )
-    
     args = parser.parse_args()
     conf = Config(args)
     multilayer = []
     for i in range(conf.num_copies):
         collection = [Graph(i,conf.n,conf.r_ini,conf.x) for i in range(conf.num_graph)]
         multilayer.append(MultilayerGraph(collection, default_build=True))
-    
     return
 
 ### Tests
@@ -295,7 +298,6 @@ def multilayerEvolution(n: int) -> None:
     triangle_number_evol_plot = drawAndStoreGraphic(xvalues=xvalues, yvalues=df["Triangle_number"], 
                                          xlabel=xlabel, ylabel="Triangle number of graph", title=test)    
     
-    # [savePlots(figure, name) for name, figure in zip(map(str,xvalues), plots)]   # Graph figure saving (NO ES NECESARIO, YA LOS GUARDAMOS DONDE ANTES)
     return
 
 def parameterEvolution() -> None:   # Funciona menos el k_core
@@ -307,24 +309,95 @@ def parameterEvolution() -> None:   # Funciona menos el k_core
     """
     test: str = f"Parameter evolution for multilayer with {conf.num_graph} layers"
     
-    # Plot generation
-    tags, plots = multilayer.getParameterProgression()
+    tags, plots = multilayer.getParameterProgression()          # Plot generation
     # k_core = kCorePlot(multilayer.graph)
+    [savePlots(plot, name) for name, plot in zip(tags, plots)]  # Plot saving
     
-    # Plot saving
-    [savePlots(plot, name) for name, plot in zip(tags, plots)]
-    # savePlots(k_core, "K-core graph of multilayer")
-
     return
 
-def radiusEvolution() -> None:
+### Project Tests
+
+def test1() -> None:
     """
-    python3 main.py -test 010 -n 1000 -r_ini 0.1 -r_fin 0.2 -radius_add 0.005 -num_graph 20
+    Primer test. Veiem la evolució del multicapa variant el número de nodes n.
     
-    Test que, donat el rang inicial, final i els intervals donats per la configuració global, obtenim el dataframe amb les propietats
-    del graf per cada radi i-èssim de l'interval [r_ini, r_fin, +r_add]
+    Donat un ordre n determinat, observem la progressió dels paràmetres segons l'interval [1,n].
+    Les propietats d'estudi es presenten en forma de data frame i un conjunt de gràfiques.
     
-    - TODO cambiar a list de multilayer
+    PSEUDOCODE:
+    
+    xValues = range(1,n+1)
+    plots := generate_empty_plots()
+    for n in xValues:
+        mls := generate_multilayers(conf.num_copies)
+        dataframes += get_properties_datasets(mls)
+    end for
+    df := dataset_mean(dataframes)
+    add_values_to_plots(plot, xValues, df)  # Every plot has xValues for x dimension, and df[key] for y dimension.
+    save_plots()
+    return
+    
+    - TODO: Hacer documentación del experimento
+    """
+    test: str = f"Order evol in multilayer for i-th order [1,{conf.n},+1]"
+    xvalues = range(1,conf.n+1)
+    df = []
+    
+    for _ in range(conf.num_copies):
+        dfs = []
+        for n in xvalues:
+            collection = [Graph(i,n,conf.r_ini,conf.x) for i in range(conf.num_graph)]
+            ml = MultilayerGraph(collection, default_build=True)
+            dfs.append(Graph.getInfo(ml))
+        df.append(pd.concat(dfs))
+        
+    df = dataframeMean(df)
+    xlabel = "Order values"
+    size_evol_plot = drawAndStoreGraphic(xvalues=xvalues, yvalues=df["Size"], 
+                                         xlabel=xlabel, ylabel="Size of multilayer", title=test)
+    connection_evol_plot = drawAndStoreGraphic(xvalues=xvalues, yvalues=df["Is_connected"], 
+                                         xlabel=xlabel, ylabel="Is connected", title=test)
+    number_cc_evol_plot = drawAndStoreGraphic(xvalues=xvalues, yvalues=df["Connected_components"], 
+                                         xlabel=xlabel, ylabel="Number of Connected components", title=test)
+    largest_component_diameter_plot = drawAndStoreGraphic(xvalues=xvalues, yvalues=df["Largest_component_diameter"], 
+                                         xlabel=xlabel, ylabel="Largest_component_diameter", title=test)
+    radius_evol_plot = drawAndStoreGraphic(xvalues=xvalues, yvalues=df["Radius"], 
+                                         xlabel=xlabel, ylabel="Radius of graph", title=test)
+    diameter_evol_plot = drawAndStoreGraphic(xvalues=xvalues, yvalues=df["Diameter"], 
+                                         xlabel=xlabel, ylabel="Diameter of graph", title=test)
+    eulerian_evol_plot = drawAndStoreGraphic(xvalues=xvalues, yvalues=df["Is_eulerian"], 
+                                         xlabel=xlabel, ylabel="Is eulerian", title=test)
+    min_degree_evol_plot = drawAndStoreGraphic(xvalues=xvalues, yvalues=df["Min_degree"], 
+                                         xlabel=xlabel, ylabel="Minimum degree in graph", title=test)
+    max_degree_evol_plot = drawAndStoreGraphic(xvalues=xvalues, yvalues=df["Max_degree"], 
+                                         xlabel=xlabel, ylabel="Maximum degree in graph", title=test)
+    acc_evol_plot = drawAndStoreGraphic(xvalues=xvalues, yvalues=df["Average_Clustering_Coefficient"], 
+                                         xlabel=xlabel, ylabel="Average clustering coefficient in graph", title=test)
+    triangle_number_evol_plot = drawAndStoreGraphic(xvalues=xvalues, yvalues=df["Triangle_number"], 
+                                         xlabel=xlabel, ylabel="Triangle number of graph", title=test)
+    
+    saveDataFrames([df])
+    pass
+
+def test2() -> None:
+    """
+    Second test. We want to analyse the changes of multilayer graph's properties changing the radius before generating
+    the layers of the multilayer. Then we combine them and get results.
+    
+    The values of the test are given by conf.r_ini, conf.r_fin and conf.radius_add. It is translated to:
+    
+    PSEUDOCODE:
+    
+    xValues = np.arange(conf.r_ini, conf.r_fin, conf.radius_add)
+    plots := generate_empty_plots()
+    for r in r_values:
+        mls := generate_multilayers()
+        dataframes += get_properties_datasets(mls)
+    end for
+    df := dataset_mean(dataframes)
+    add_values_to_plots(plot, xValues, df)  # Every plot has xValues for x dimension, and df[key] for y dimension.
+    save_plots()
+    return
     """
     test: str = f"Radius evol in multilayer for i-th radius [{conf.r_ini},{conf.r_fin},+{conf.radius_add}] "
     
@@ -360,36 +433,13 @@ def radiusEvolution() -> None:
                                          xlabel=xlabel, ylabel="Average clustering coefficient in graph", title=test)
     triangle_number_evol_plot = drawAndStoreGraphic(xvalues=xvalues, yvalues=df["Triangle_number"], 
                                          xlabel=xlabel, ylabel="Triangle number of graph", title=test)
+    
+    saveDataFrames([df])
     return
 
-### Project Tests
-
-def test1() -> None:
+def test3() -> None:
     """
-    First test. We want to analyse the changes of multilayer graph's properties changing the radius before generating
-    the layers of the multilayer. Then we combine them and get results.
-    
-    The values of the test are given by conf.r_ini, conf.r_fin and conf.radius_add. It is translated to:
-    
-    PSEUDOCODE:
-    
-    xValues = np.arange(conf.r_ini, conf.r_fin, conf.radius_add)
-    plots := generate_empty_plots()
-    for r in r_values:
-        mls := generate_multilayers()
-        dataframes += get_properties_datasets(mls)
-    end for
-    df := dataset_mean(dataframes)
-    add_values_to_plots(plot, xValues, df)  # Every plot has xValues for x dimension, and df[key] for y dimension.
-    save_plots()
-    return
-    """
-    radiusEvolution()   # Here is the code
-    return
-
-def test2() -> None:
-    """
-    Second test. We want to analyse multilayer's properties changing radius and number of nodes (r, n)
+    Third test. We want to analyse multilayer's properties changing radius and number of nodes (r, n)
     
     Given default number of nodes config.n, we get the mean of the datasets given by generate config.num_copies datasets 
     of these number of multilayer graphs, and then do the same for some other values of number of nodes (n)
@@ -413,25 +463,18 @@ def test2() -> None:
     return
     """
     test: str = f"Radius evolution for different orders of multilayer"
-    
-    print(1)
     dfs = []
     
     for n in n_values:
-        print(2)
         rawDfs = []
         for _ in range(conf.num_copies):
             collection = [Graph(i,n,conf.r_ini,conf.x) for i in range(conf.num_graph)]
             ml = MultilayerGraph(collection, default_build=True)
             rawDfs.append(ml.radiusProgression(conf.r_ini, conf.r_fin, conf.radius_add))
         dfs.append(dataframeMean(rawDfs))
-        print(type(dfs), len(dfs))
-        print(4)
         
     xlabel = "Radius values"
     xvalues = np.arange(conf.r_ini, conf.r_fin, conf.radius_add)
-        
-    print(5)
     
     df = [dfs[i]["Size"] for i in range(len(dfs))]
     size_evol_plot = drawAndStoreMultipleLinearGraphic(xvalues=xvalues, yvalues=df, 
@@ -470,11 +513,12 @@ def test2() -> None:
     K_core_order_evol_plot = drawAndStoreMultipleLinearGraphic(xvalues=xvalues, yvalues=df, 
                                          xlabel=xlabel, ylabel="Order of K-core graph", title=test)
     
+    saveDataFrames(dfs)
     return
 
-def test3() -> None:
+def test4() -> None:
     """
-    Tercer test. Volem veure la progresió dels atributs del graf, quan anem afegint capes, i depenent del número
+    Quart test. Volem veure la progresió dels atributs del graf, quan anem afegint capes, i depenent del número
     de nodes n.
     
     Donada una llista d'ordres n_list, volem executar parameterEvolution() per cadascun dels multicapes generats a través
@@ -506,9 +550,6 @@ def test3() -> None:
             ml = MultilayerGraph(collection, default_build=True)
             parameterDF = ml.getParameterProgression()
             rawDfs.append(parameterDF)
-        print(type(rawDfs), len(rawDfs))
-        print()
-        print(rawDfs)
         dfMean = dataframeMean(rawDfs)
         dfs.append(dfMean)
         
@@ -552,6 +593,7 @@ def test3() -> None:
     K_core_order_evol_plot = drawAndStoreMultipleLinearGraphic(xvalues=xvalues, yvalues=df, 
                                          xlabel=xlabel, ylabel="Order of K-core graph", title=test)
     
+    saveDataFrames(dfs)
     return
     
 ### Main
@@ -561,29 +603,35 @@ def main() -> None:
     Main script
     """
     ini = time()
-    config()                                            # Configuració global    
-    if conf.test == "default":                          # Default execution (no test, only random code)
+    config()                                            # Configuració global
+     
+    if conf.test == "default":
         """
         Execució per defecte. S'executa quan volem fer petites proves sobre el codi
         """
-        radiusEvolution()
-        
-    if conf.test == '1':
+        pass
+    elif conf.test == '1':
         """
-        Test 1. Veiem la progressió dels atributs del multicapa variant valors del radi.
+        Test 1.
         """
         test1()
-    if conf.test == '2':
+    elif conf.test == '2':
         """
         Test 2.
         """
         test2()
-        #radiusEvolution()
-    if conf.test == '3':
+    elif conf.test == '3':
         """
         Test 3.
         """
         test3()
+    elif conf.test == '4':
+        """
+        Test 4.
+        """
+        test4()
+    else:
+        raise Exception("Número de test erroni")
         
     fin = time()
     print(f"L'script ha trigat {fin-ini} segons")

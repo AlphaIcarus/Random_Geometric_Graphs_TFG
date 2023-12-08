@@ -2,31 +2,15 @@ import networkx as nx
 import random
 import pandas as pd
 import math
-import xml.etree.ElementTree as et
 import matplotlib.pyplot as plt
 import numpy as np
 
-from copy import deepcopy
-from time import time
-
-# Required by networkx.random_geometric_graph
-import scipy
+import scipy    # Required by networkx.random_geometric_graph
 
 # Things to do:
 # TODO añadir documentación detallada sobre los parámetros y funciones
 
 # Utils
-
-def drawGraph(xValues: list, yValues: list, title: str):
-    """
-    Funció per generar un gràfic fent servir Matplotlib: Per cada valor i-èssim de xValues i yValues, es denota un punt
-    al gràfic.
-    """
-    assert(xValues == yValues)
-    
-    fig = None
-        
-    return fig
 
 class Graph:
 
@@ -49,10 +33,8 @@ class Graph:
     
     def getInfo(self, index: int = 0) -> pd.DataFrame:
         """
-        Mètode per obtenir 
-        - TODO Rellenar el dataframme con toda la info de interés
+        Mètode per obtenir els paràmetres d'estudi dels experiments.
         """
-        
         # Degrees
         degrees = [val for (_, val) in self.graph.degree()]
         min_degree = min(degrees)
