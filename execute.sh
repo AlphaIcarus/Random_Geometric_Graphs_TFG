@@ -9,36 +9,21 @@
 # !pip install pandas
 # !pip install random
 # !pip install math
-# !pip install xml
 # !pip install scipy
-
-# Global parameters
 
 # Main script
 
-# Test 1: Evolució del multicapa segons canvis en el radi 
-  python3 main.py -test 1 -n 1000 -r_ini 0.0 -r_fin 0.1 -radius_add 0.005 -num_graph 20 -num_copies 5
+# Test 1: Evolució del multicapa segons número de nodes n
+  python3 main.py -test 1 -n 1000 -r_ini 0.1 -r_fin 0.2 -radius_add 0.005 -num_graph 20 -num_copies 5
 
-# Test 2: 
+# Test 2: Evolució del multicapa segons radi r
   python3 main.py -test 2 -n 1000 -r_ini 0.0 -r_fin 0.1 -radius_add 0.005 -num_graph 20 -num_copies 5
 
-# Test 3: 
+# Test 3: Evolució del multicapa segons radi r, tenint en compte diferents valors de n
   python3 main.py -test 3 -n 1000 -r_ini 0.0 -r_fin 0.1 -radius_add 0.005 -num_graph 20 -num_copies 5
 
+# Test 4: Evolució del multicapa segons número de capes c, tenint en compte diferents valors de n
+  python3 main.py -test 4 -n 1000 -r_ini 0.1 -r_fin 0.2 -radius_add 0.005 -num_graph 20 -num_copies 5
 
-
-# OBERSVERACIONES FINALES
-
-# El parámetro x se queda igual SIEMPRE
-
-# TESTS 1 FORMAL
-
-# Radio: ver valores de 0.1 a 0.5 de radio (en valores de x=1.0) con r_add = 0.1, esto para valores de n = {1000,2000,3000,4000,5000}.
-    # Si vemos comportamientos raros hacemos focus en el intervalo raro y hacemos el estudio con r_add menor
-    # Hacer el estudio en las zonas que sean interesantes
-# Si todo está bien vemos los valores de las propiedades --> Documentamos en la memoria
-    # Vemos la progresión dependiendo del valor de n, si vemos que es progresivo no seguimos aumentando el valor de n, pero si hay cambios seguimos el test con valores más altos
-
-# Ver dos bloques: N pequeña y N grande
-
-# Empezar a escribir los resultados de los experimentos y lo que encontremos (todo lo que se me ocurra lo dejo apuntado) --> Qué se observa? (IMPORTANTE)
+# Test 5: Evolució del multicapa segons radi r, tenint en compte diferents valors de n
+  python3 main.py -test 3 -n 1000 -r_ini 0.0 -r_fin 0.02 -radius_add 0.0005 -num_graph 20 -num_copies 5

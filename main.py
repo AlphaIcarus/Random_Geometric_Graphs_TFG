@@ -3,14 +3,9 @@ TODOs generales:
     - TODO Documentar todas las funciones, con sus @param, @return y la función que hacen (mirar online documentación en python completa)
     - TODO Rellenar con todos los paquetes necesarios para pip install en execute.sh
     - TODO Mirar los pseudocódigos del main y corregirlos (o cogerlos del latex)
-    
-    REUNIÓN 13 NOV
-    
-    - TODO Mirar el número de vértices del K-core (con k máxima) y mirar la evolución de la K
-    
-    [MEJORAS EN EL CÓDIGO]
-    - TODO en multicapa, estamos guardando en cada grafo sencillo los mismos parámetros una y orta vez (n, x, r). Quizá hay una manera de mejorarlo
-        · Hay que cambiar el atributo graphList para guardar únicamente el grafo de NetworkX y no una lista de Graph    
+        
+    - TODO Obtener el parámetro K
+    - TODO Obtener los grafos en forma de png por cada test, para ponerlos en la memoria   
 """
 
 # Packages
@@ -23,17 +18,14 @@ import pandas as pd
 from collections import defaultdict
 # from joblib import Parallel
 
-
 from graph import Graph, MultilayerGraph
 from config import Config
-
 from datetime import datetime
 from time import time
 
 # Parameters
-
 now = str(datetime.now()).replace(":",".")      # Necessari pel format de les carpetes
-n_values = [1000,2000,3000,4000,5000,10000]     # Valors dels ordres del test 2
+n_values = [1000,2000,3000]                     # Valors dels ordres del test 2
 tdir = '/' if os.name == 'posix' else '\\'      # Barra espaiadora
 dir = f".{tdir}test_output{tdir}" + now         # Direcció de sortida dels tests
 
@@ -60,7 +52,7 @@ def loadDataFrames(path: str) -> list[pd.DataFrame]:
     Returns:
         list[pd.DataFrame]: Llista de data frames amb els valors de memòria.
     """
-    csvs: list[str] = filter(str.endswith(".csv") == True ,os.listdir(path))
+    csvs: list[str] = filter(str.endswith(".csv") == True, os.listdir(path))
     
     dfs: list[pd.DataFrame] = []
     for csv in csvs:
@@ -114,7 +106,7 @@ def drawAndStoreGraphic(xvalues: list, yvalues: list, xlabel: str, ylabel: str, 
     ax.set_xlim(left=0)
     
     os.makedirs(dir, exist_ok=True)  
-    fig.savefig(dir + tdir + ylabel + ".png") # Save figure
+    fig.savefig(dir + tdir + ylabel.replace(' ','_') + ".png") # Save figure
     plt.close()     # Figure closing due to overload
     return fig
 
@@ -134,7 +126,7 @@ def drawAndStoreMultipleLinearGraphic(xvalues: list, yvalues: list[list], xlabel
     ax.set_xlim(left=0)
     
     os.makedirs(dir, exist_ok=True)  
-    fig.savefig(dir + "\\" + ylabel + ".png")   # Save figure
+    fig.savefig(dir + "\\" + ylabel.replace(' ','_') + ".png")   # Save figure
     plt.close()                                 # Figure closing due to overload
     return fig
 
@@ -142,9 +134,9 @@ def savePlots(fig: plt.Figure, fileName: str) -> None:
     """
     Funció auxiliar que guarda un gràfic en una ubicació determinada per folderPath
     """
-    dir = ".\\test_output\\" + now
+    dir = f".{tdir}test_output{tdir}" + now
     os.makedirs(dir, exist_ok=True)  
-    fig.savefig(dir + "\\" + fileName + ".png") # Save figure
+    fig.savefig(dir + tdir + fileName + ".png") # Save figure
     return
 
 def kCorePlot(G: nx.Graph) -> plt.Figure:
@@ -173,6 +165,7 @@ def kCorePlot(G: nx.Graph) -> plt.Figure:
     return plot
     
 ## Main utilities
+
 def config() -> None:
     """
     Funció principal per fer configuracions previes a l'execució de l'script.
@@ -238,7 +231,7 @@ def config() -> None:
     # Parser for num_graph parameter
     parser.add_argument(
         '-num_graph', 
-        help="Número de grafs a generar",
+        help="Número de grafs a generar pel multicapa",
         type=int,
         default=50,
         dest="num_graph"
@@ -248,71 +241,15 @@ def config() -> None:
         '-num_copies', 
         help="Número de grafs multicapa a generar",
         type=int,
-        default=1,
+        default=5,
         dest="num_copies"
     )
     args = parser.parse_args()
     conf = Config(args)
     multilayer = []
-    for i in range(conf.num_copies):
+    for _ in range(conf.num_copies):
         collection = [Graph(i,conf.n,conf.r_ini,conf.x) for i in range(conf.num_graph)]
         multilayer.append(MultilayerGraph(collection, default_build=True))
-    return
-
-### Tests
-
-def multilayerEvolution(n: int) -> None:
-    """
-    Test que, donat un valor enter, obté la progressió del graf unió i guarda el graf cada n capes afegides.
-    Serveix per veure com evoluciona gràficament, la imatge es va carregant de vèrtexos.s
-    
-    - TODO cambiar a list de multilayer
-    """
-    test: str = f"Multilayer evolution by adding {n} layers"
-    df, plots = multilayer.seeProgression(rang=n)       # PArameter dataframe and graphs plotted
-
-    # Parameter plotting
-    xlabel = "Layers added to multilayer"
-    xvalues = range(1, conf.num_graph, n)
-    
-    size_evol_plot = drawAndStoreGraphic(xvalues=xvalues, yvalues=df["Size"], 
-                                         xlabel=xlabel, ylabel="Size of multilayer", title=test)
-    connection_evol_plot = drawAndStoreGraphic(xvalues=xvalues, yvalues=df["Is_connected"], 
-                                         xlabel=xlabel, ylabel="Is connected", title=test)
-    number_cc_evol_plot = drawAndStoreGraphic(xvalues=xvalues, yvalues=df["Connected_components"], 
-                                         xlabel=xlabel, ylabel="Number of Connected components", title=test)
-    largest_component_diameter_plot = drawAndStoreGraphic(xvalues=xvalues, yvalues=df["Largest_component_diameter"], 
-                                         xlabel=xlabel, ylabel="Largest_component_diameter", title=test)
-    radius_evol_plot = drawAndStoreGraphic(xvalues=xvalues, yvalues=df["Radius"], 
-                                         xlabel=xlabel, ylabel="Radius of graph", title=test)
-    diameter_evol_plot = drawAndStoreGraphic(xvalues=xvalues, yvalues=df["Diameter"], 
-                                         xlabel=xlabel, ylabel="Diameter of graph", title=test)
-    eulerian_evol_plot = drawAndStoreGraphic(xvalues=xvalues, yvalues=df["Is_eulerian"], 
-                                         xlabel=xlabel, ylabel="Is eulerian", title=test)
-    min_degree_evol_plot = drawAndStoreGraphic(xvalues=xvalues, yvalues=df["Min_degree"], 
-                                         xlabel=xlabel, ylabel="Minimum degree in graph", title=test)
-    max_degree_evol_plot = drawAndStoreGraphic(xvalues=xvalues, yvalues=df["Max_degree"], 
-                                         xlabel=xlabel, ylabel="Maximum degree in graph", title=test)
-    acc_evol_plot = drawAndStoreGraphic(xvalues=xvalues, yvalues=df["Average_Clustering_Coefficient"], 
-                                         xlabel=xlabel, ylabel="Average clustering coefficient in graph", title=test)
-    triangle_number_evol_plot = drawAndStoreGraphic(xvalues=xvalues, yvalues=df["Triangle_number"], 
-                                         xlabel=xlabel, ylabel="Triangle number of graph", title=test)    
-    
-    return
-
-def parameterEvolution() -> None:   # Funciona menos el k_core
-    """
-    Test que, donades les condicions d'entrada del programa, imprimeix per pantalla un estudi de com evoluciona 
-    el graf multicapa depenent del número de capes.
-    
-    - TODO OUTDATED DEBIDO A CAMBIO EN EL MÈTODO DEL MULTICAPA
-    """
-    test: str = f"Parameter evolution for multilayer with {conf.num_graph} layers"
-    
-    tags, plots = multilayer.getParameterProgression()          # Plot generation
-    # k_core = kCorePlot(multilayer.graph)
-    [savePlots(plot, name) for name, plot in zip(tags, plots)]  # Plot saving
-    
     return
 
 ### Project Tests
@@ -339,7 +276,6 @@ def test1() -> None:
     
     - TODO: Hacer documentación del experimento
     """
-    test: str = f"Order evol in multilayer for i-th order [1,{conf.n},+1]"
     xvalues = range(1,conf.n+1)
     df = []
     
@@ -352,29 +288,33 @@ def test1() -> None:
         df.append(pd.concat(dfs))
         
     df = dataframeMean(df)
-    xlabel = "Order values"
+    xlabel = "Order value"
     size_evol_plot = drawAndStoreGraphic(xvalues=xvalues, yvalues=df["Size"], 
-                                         xlabel=xlabel, ylabel="Size of multilayer", title=test)
+                                         xlabel=xlabel, ylabel="Size of multilayer", title="Size progression by given value of order")
     connection_evol_plot = drawAndStoreGraphic(xvalues=xvalues, yvalues=df["Is_connected"], 
-                                         xlabel=xlabel, ylabel="Is connected", title=test)
+                                         xlabel=xlabel, ylabel="Is connected", title="Probability of connection progression by given value of order")
     number_cc_evol_plot = drawAndStoreGraphic(xvalues=xvalues, yvalues=df["Connected_components"], 
-                                         xlabel=xlabel, ylabel="Number of Connected components", title=test)
+                                         xlabel=xlabel, ylabel="Number of Connected components", title="Number of connected components progression by given value of order")
     largest_component_diameter_plot = drawAndStoreGraphic(xvalues=xvalues, yvalues=df["Largest_component_diameter"], 
-                                         xlabel=xlabel, ylabel="Largest_component_diameter", title=test)
+                                         xlabel=xlabel, ylabel="Largest component diameter", title="Largest component diameter progression by given value of order")
     radius_evol_plot = drawAndStoreGraphic(xvalues=xvalues, yvalues=df["Radius"], 
-                                         xlabel=xlabel, ylabel="Radius of graph", title=test)
+                                         xlabel=xlabel, ylabel="Radius of graph", title="Radius progression by given value of order")
     diameter_evol_plot = drawAndStoreGraphic(xvalues=xvalues, yvalues=df["Diameter"], 
-                                         xlabel=xlabel, ylabel="Diameter of graph", title=test)
+                                         xlabel=xlabel, ylabel="Diameter of graph", title="Diameter progression by given value of order")
     eulerian_evol_plot = drawAndStoreGraphic(xvalues=xvalues, yvalues=df["Is_eulerian"], 
-                                         xlabel=xlabel, ylabel="Is eulerian", title=test)
+                                         xlabel=xlabel, ylabel="Is eulerian", title="Eulerian property progression by given value of order")
     min_degree_evol_plot = drawAndStoreGraphic(xvalues=xvalues, yvalues=df["Min_degree"], 
-                                         xlabel=xlabel, ylabel="Minimum degree in graph", title=test)
+                                         xlabel=xlabel, ylabel="Minimum degree in graph", title="Minimum degree progression by given value of order")
     max_degree_evol_plot = drawAndStoreGraphic(xvalues=xvalues, yvalues=df["Max_degree"], 
-                                         xlabel=xlabel, ylabel="Maximum degree in graph", title=test)
+                                         xlabel=xlabel, ylabel="Maximum degree in graph", title="Maximum degree progression by given value of order")
     acc_evol_plot = drawAndStoreGraphic(xvalues=xvalues, yvalues=df["Average_Clustering_Coefficient"], 
-                                         xlabel=xlabel, ylabel="Average clustering coefficient in graph", title=test)
+                                         xlabel=xlabel, ylabel="Average clustering coefficient in graph", title="Average clustering coefficient progression by given value of order")
     triangle_number_evol_plot = drawAndStoreGraphic(xvalues=xvalues, yvalues=df["Triangle_number"], 
-                                         xlabel=xlabel, ylabel="Triangle number of graph", title=test)
+                                         xlabel=xlabel, ylabel="Triangle number of graph", title="Triangle number progression by given value of order")
+    K_core_k_value_evol_plot = drawAndStoreGraphic(xvalues=xvalues, yvalues=df["K_value"], 
+                                         xlabel=xlabel, ylabel="Value for k of K-core graph", title="K-core k value progression by given value of radius")
+    K_core_order_evol_plot = drawAndStoreGraphic(xvalues=xvalues, yvalues=df["K_core_order"], 
+                                         xlabel=xlabel, ylabel="Order of K-core graph", title="K-core order progression by given value of order")
     
     saveDataFrames([df])
     pass
@@ -398,43 +338,43 @@ def test2() -> None:
     add_values_to_plots(plot, xValues, df)  # Every plot has xValues for x dimension, and df[key] for y dimension.
     save_plots()
     return
-    """
-    test: str = f"Radius evol in multilayer for i-th radius [{conf.r_ini},{conf.r_fin},+{conf.radius_add}] "
-    
-    # df = multilayer.radiusProgression(conf.r_ini, conf.r_fin, conf.radius_add)
-    # print(df)
-    
+    """    
     # dfs = Parallel(n_jobs=-1)(multilayer[i].radiusProgression(conf.r_ini, conf.r_fin, conf.radius_add) for i in range(conf.num_copies))
     
     dfs = [multilayer[i].radiusProgression(conf.r_ini, conf.r_fin, conf.radius_add) for i in range(conf.num_copies)]
     df = dataframeMean(dfs)
       
-    xlabel = "Radius values"
+    xlabel = "Radius value"
     xvalues = np.arange(conf.r_ini, conf.r_fin, conf.radius_add)
     size_evol_plot = drawAndStoreGraphic(xvalues=xvalues, yvalues=df["Size"], 
-                                         xlabel=xlabel, ylabel="Size of multilayer", title=test)
+                                         xlabel=xlabel, ylabel="Size of multilayer", title="Size progression by given value of radius")
     connection_evol_plot = drawAndStoreGraphic(xvalues=xvalues, yvalues=df["Is_connected"], 
-                                         xlabel=xlabel, ylabel="Is connected", title=test)
+                                         xlabel=xlabel, ylabel="Is connected", title="Probability of connection progression by given value of radius")
     number_cc_evol_plot = drawAndStoreGraphic(xvalues=xvalues, yvalues=df["Connected_components"], 
-                                         xlabel=xlabel, ylabel="Number of Connected components", title=test)
+                                         xlabel=xlabel, ylabel="Number of Connected components", title="Number of connected components progression by given value of radius")
     largest_component_diameter_plot = drawAndStoreGraphic(xvalues=xvalues, yvalues=df["Largest_component_diameter"], 
-                                         xlabel=xlabel, ylabel="Largest_component_diameter", title=test)
+                                         xlabel=xlabel, ylabel="Largest component diameter", title="Largest component diameter progression by given value of radius")
     radius_evol_plot = drawAndStoreGraphic(xvalues=xvalues, yvalues=df["Radius"], 
-                                         xlabel=xlabel, ylabel="Radius of graph", title=test)
+                                         xlabel=xlabel, ylabel="Radius of graph", title="Radius progression by given value of radius")
     diameter_evol_plot = drawAndStoreGraphic(xvalues=xvalues, yvalues=df["Diameter"], 
-                                         xlabel=xlabel, ylabel="Diameter of graph", title=test)
+                                         xlabel=xlabel, ylabel="Diameter of graph", title="Diameter progression by given value of radius")
     eulerian_evol_plot = drawAndStoreGraphic(xvalues=xvalues, yvalues=df["Is_eulerian"], 
-                                         xlabel=xlabel, ylabel="Is eulerian", title=test)
+                                         xlabel=xlabel, ylabel="Is eulerian", title="Eulerian property progression by given value of radius")
     min_degree_evol_plot = drawAndStoreGraphic(xvalues=xvalues, yvalues=df["Min_degree"], 
-                                         xlabel=xlabel, ylabel="Minimum degree in graph", title=test)
+                                         xlabel=xlabel, ylabel="Minimum degree in graph", title="Minimum degree progression by given value of radius")
     max_degree_evol_plot = drawAndStoreGraphic(xvalues=xvalues, yvalues=df["Max_degree"], 
-                                         xlabel=xlabel, ylabel="Maximum degree in graph", title=test)
+                                         xlabel=xlabel, ylabel="Maximum degree in graph", title="Maximum degree progression by given value of radius")
     acc_evol_plot = drawAndStoreGraphic(xvalues=xvalues, yvalues=df["Average_Clustering_Coefficient"], 
-                                         xlabel=xlabel, ylabel="Average clustering coefficient in graph", title=test)
+                                         xlabel=xlabel, ylabel="Average clustering coefficient in graph", title="Average clustering coefficient progression by given value of radius")
     triangle_number_evol_plot = drawAndStoreGraphic(xvalues=xvalues, yvalues=df["Triangle_number"], 
-                                         xlabel=xlabel, ylabel="Triangle number of graph", title=test)
+                                         xlabel=xlabel, ylabel="Triangle number of graph", title="Triangle number progression by given value of radius")
+    K_core_k_value_evol_plot = drawAndStoreGraphic(xvalues=xvalues, yvalues=df["K_value"], 
+                                         xlabel=xlabel, ylabel="Value for k of K-core graph", title="K-core k value progression by given value of radius")
+    K_core_order_evol_plot = drawAndStoreGraphic(xvalues=xvalues, yvalues=df["K_core_order"], 
+                                         xlabel=xlabel, ylabel="Order of K-core graph", title="K-core order progression by given value of radius")
     
-    saveDataFrames([df])
+    saveDataFrames([df])                                                            # Data frame saved localy
+    [multilayer[i].drawRandomGeometricGraph() for i in range(len(multilayer))]      # Graph saved localy
     return
 
 def test3() -> None:
@@ -462,9 +402,7 @@ def test3() -> None:
     save_plots()
     return
     """
-    test: str = f"Radius evolution for different orders of multilayer"
     dfs = []
-    
     for n in n_values:
         rawDfs = []
         for _ in range(conf.num_copies):
@@ -478,40 +416,43 @@ def test3() -> None:
     
     df = [dfs[i]["Size"] for i in range(len(dfs))]
     size_evol_plot = drawAndStoreMultipleLinearGraphic(xvalues=xvalues, yvalues=df, 
-                                         xlabel=xlabel, ylabel="Size of multilayer", title=test)
+                                         xlabel=xlabel, ylabel="Size of multilayer", title="Size progression by radius value, given multiple orders")
     df = [dfs[i]["Is_connected"] for i in range(len(dfs))]
     connection_evol_plot = drawAndStoreMultipleLinearGraphic(xvalues=xvalues, yvalues=df, 
-                                         xlabel=xlabel, ylabel="Is connected", title=test)
+                                         xlabel=xlabel, ylabel="Is connected", title="Probability of connection progression by radius value, given multiple orders")
     df = [dfs[i]["Connected_components"] for i in range(len(dfs))]
     number_cc_evol_plot = drawAndStoreMultipleLinearGraphic(xvalues=xvalues, yvalues=df, 
-                                         xlabel=xlabel, ylabel="Number of Connected components", title=test)
+                                         xlabel=xlabel, ylabel="Number of Connected components", title="Number of connected components progression by radius value, given multiple orders")
     df = [dfs[i]["Largest_component_diameter"] for i in range(len(dfs))]
     largest_component_diameter_plot = drawAndStoreMultipleLinearGraphic(xvalues=xvalues, yvalues=df, 
-                                         xlabel=xlabel, ylabel="Largest_component_diameter", title=test)
+                                         xlabel=xlabel, ylabel="Largest_component_diameter", title="Largest component diameter progression by radius value, given multiple orders")
     df = [dfs[i]["Radius"] for i in range(len(dfs))]
     radius_evol_plot = drawAndStoreMultipleLinearGraphic(xvalues=xvalues, yvalues=df, 
-                                         xlabel=xlabel, ylabel="Radius of graph", title=test)
+                                         xlabel=xlabel, ylabel="Radius of graph", title="Radius progression by radius value, given multiple orders")
     df = [dfs[i]["Diameter"] for i in range(len(dfs))]
     diameter_evol_plot = drawAndStoreMultipleLinearGraphic(xvalues=xvalues, yvalues=df, 
-                                         xlabel=xlabel, ylabel="Diameter of graph", title=test)
+                                         xlabel=xlabel, ylabel="Diameter of graph", title="Diameter progression by radius value, given multiple orders")
     df = [dfs[i]["Is_eulerian"] for i in range(len(dfs))]
     eulerian_evol_plot = drawAndStoreMultipleLinearGraphic(xvalues=xvalues, yvalues=df, 
-                                         xlabel=xlabel, ylabel="Is eulerian", title=test)
+                                         xlabel=xlabel, ylabel="Is eulerian", title="Eulerian property progression by radius value, given multiple orders")
     df = [dfs[i]["Min_degree"] for i in range(len(dfs))]
     min_degree_evol_plot = drawAndStoreMultipleLinearGraphic(xvalues=xvalues, yvalues=df, 
-                                         xlabel=xlabel, ylabel="Minimum degree in graph", title=test)
+                                         xlabel=xlabel, ylabel="Minimum degree in graph", title="Minimum degree progression by radius value, given multiple orders")
     df = [dfs[i]["Max_degree"] for i in range(len(dfs))]
     max_degree_evol_plot = drawAndStoreMultipleLinearGraphic(xvalues=xvalues, yvalues=df, 
-                                         xlabel=xlabel, ylabel="Maximum degree in graph", title=test)
+                                         xlabel=xlabel, ylabel="Maximum degree in graph", title="Maximum degree progression by radius value, given multiple orders")
     df = [dfs[i]["Average_Clustering_Coefficient"] for i in range(len(dfs))]
     acc_evol_plot = drawAndStoreMultipleLinearGraphic(xvalues=xvalues, yvalues=df, 
-                                         xlabel=xlabel, ylabel="Average clustering coefficient in graph", title=test)
+                                         xlabel=xlabel, ylabel="Average clustering coefficient in graph", title="Average clustering coefficient progression by radius value, given multiple orders")
     df = [dfs[i]["Triangle_number"] for i in range(len(dfs))]
     triangle_number_evol_plot = drawAndStoreMultipleLinearGraphic(xvalues=xvalues, yvalues=df, 
-                                         xlabel=xlabel, ylabel="Triangle number of graph", title=test)
+                                         xlabel=xlabel, ylabel="Triangle number of graph", title="Triangle number progression by radius value, given multiple orders")
+    df = [dfs[i]["K_value"] for i in range(len(dfs))]
+    K_core_k_value_evol_plot = drawAndStoreMultipleLinearGraphic(xvalues=xvalues, yvalues=df, 
+                                         xlabel=xlabel, ylabel="Value for k of K-core graph", title="K-core k value progression by number of layers, given multiple orders")
     df = [dfs[i]["K_core_order"] for i in range(len(dfs))]
     K_core_order_evol_plot = drawAndStoreMultipleLinearGraphic(xvalues=xvalues, yvalues=df, 
-                                         xlabel=xlabel, ylabel="Order of K-core graph", title=test)
+                                         xlabel=xlabel, ylabel="Order of K-core graph", title="K-core order progression by radius value, given multiple orders")
     
     saveDataFrames(dfs)
     return
@@ -537,10 +478,7 @@ def test4() -> None:
     end for
     save_plots()
     return
-    """
-    test: str = f"Radius evolution for different orders of multilayer"
-    
-    # n_values = [1000,2000,3000,4000,5000,10000,20000]     # Valors de l'ordre del graf
+    """    
     dfs = []
     
     for n in n_values:
@@ -558,40 +496,43 @@ def test4() -> None:
             
     df = [dfs[i]["Size"] for i in range(len(dfs))]
     size_evol_plot = drawAndStoreMultipleLinearGraphic(xvalues=xvalues, yvalues=df, 
-                                         xlabel=xlabel, ylabel="Size of multilayer", title=test)
+                                         xlabel=xlabel, ylabel="Size of multilayer", title="Size progression by number of layers, given multiple orders")
     df = [dfs[i]["Is_connected"] for i in range(len(dfs))]
     connection_evol_plot = drawAndStoreMultipleLinearGraphic(xvalues=xvalues, yvalues=df, 
-                                         xlabel=xlabel, ylabel="Is connected", title=test)
+                                         xlabel=xlabel, ylabel="Is connected", title="Probability of connection progression by number of layers, given multiple orders")
     df = [dfs[i]["Connected_components"] for i in range(len(dfs))]
     number_cc_evol_plot = drawAndStoreMultipleLinearGraphic(xvalues=xvalues, yvalues=df, 
-                                         xlabel=xlabel, ylabel="Number of Connected components", title=test)
+                                         xlabel=xlabel, ylabel="Number of Connected components", title="Number of connected components progression by number of layers, given multiple orders")
     df = [dfs[i]["Largest_component_diameter"] for i in range(len(dfs))]
     largest_component_diameter_plot = drawAndStoreMultipleLinearGraphic(xvalues=xvalues, yvalues=df, 
-                                         xlabel=xlabel, ylabel="Largest_component_diameter", title=test)
+                                         xlabel=xlabel, ylabel="Largest_component_diameter", title="Largest component diameter progression by number of layers, given multiple orders")
     df = [dfs[i]["Radius"] for i in range(len(dfs))]
     radius_evol_plot = drawAndStoreMultipleLinearGraphic(xvalues=xvalues, yvalues=df, 
-                                         xlabel=xlabel, ylabel="Radius of graph", title=test)
+                                         xlabel=xlabel, ylabel="Radius of graph", title="Radius progression by number of layers, given multiple orders")
     df = [dfs[i]["Diameter"] for i in range(len(dfs))]
     diameter_evol_plot = drawAndStoreMultipleLinearGraphic(xvalues=xvalues, yvalues=df, 
-                                         xlabel=xlabel, ylabel="Diameter of graph", title=test)
+                                         xlabel=xlabel, ylabel="Diameter of graph", title="Diameter progression by number of layers, given multiple orders")
     df = [dfs[i]["Is_eulerian"] for i in range(len(dfs))]
     eulerian_evol_plot = drawAndStoreMultipleLinearGraphic(xvalues=xvalues, yvalues=df, 
-                                         xlabel=xlabel, ylabel="Is eulerian", title=test)
+                                         xlabel=xlabel, ylabel="Is eulerian", title="Eulerian property progression by number of layers, given multiple orders")
     df = [dfs[i]["Min_degree"] for i in range(len(dfs))]
     min_degree_evol_plot = drawAndStoreMultipleLinearGraphic(xvalues=xvalues, yvalues=df, 
-                                         xlabel=xlabel, ylabel="Minimum degree in graph", title=test)
+                                         xlabel=xlabel, ylabel="Minimum degree in graph", title="Minimum degree progression by number of layers, given multiple orders")
     df = [dfs[i]["Max_degree"] for i in range(len(dfs))]
     max_degree_evol_plot = drawAndStoreMultipleLinearGraphic(xvalues=xvalues, yvalues=df, 
-                                         xlabel=xlabel, ylabel="Maximum degree in graph", title=test)
+                                         xlabel=xlabel, ylabel="Maximum degree in graph", title="Maximum degree progression by number of layers, given multiple orders")
     df = [dfs[i]["Average_Clustering_Coefficient"] for i in range(len(dfs))]
     acc_evol_plot = drawAndStoreMultipleLinearGraphic(xvalues=xvalues, yvalues=df, 
-                                         xlabel=xlabel, ylabel="Average clustering coefficient in graph", title=test)
+                                         xlabel=xlabel, ylabel="Average clustering coefficient in graph", title="Average clustering coefficient progression by number of layers, given multiple orders")
     df = [dfs[i]["Triangle_number"] for i in range(len(dfs))]
     triangle_number_evol_plot = drawAndStoreMultipleLinearGraphic(xvalues=xvalues, yvalues=df, 
-                                         xlabel=xlabel, ylabel="Triangle number of graph", title=test)
+                                         xlabel=xlabel, ylabel="Triangle number of graph", title="Triangle number progression by number of layers, given multiple orders")
+    df = [dfs[i]["K_value"] for i in range(len(dfs))]
+    K_core_k_value_evol_plot = drawAndStoreMultipleLinearGraphic(xvalues=xvalues, yvalues=df, 
+                                         xlabel=xlabel, ylabel="Value for k of K-core graph", title="K-core k value progression by number of layers, given multiple orders")
     df = [dfs[i]["K_core_order"] for i in range(len(dfs))]
     K_core_order_evol_plot = drawAndStoreMultipleLinearGraphic(xvalues=xvalues, yvalues=df, 
-                                         xlabel=xlabel, ylabel="Order of K-core graph", title=test)
+                                         xlabel=xlabel, ylabel="Order of K-core graph", title="K-core order progression by number of layers, given multiple orders")
     
     saveDataFrames(dfs)
     return
@@ -607,8 +548,13 @@ def main() -> None:
      
     if conf.test == "default":
         """
-        Execució per defecte. S'executa quan volem fer petites proves sobre el codi
+        Execució per defecte.
+        
+        El farem servir per imprimir grafs per la memòria o altres proves puntuals.
         """
+        #g = Graph(0,1000,0.1,1.0,None)
+        g = MultilayerGraph([Graph(0,1000,0.1,1.0,None) for i in range(20)])
+        g.drawRandomGeometricGraph()
         pass
     elif conf.test == '1':
         """

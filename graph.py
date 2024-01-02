@@ -5,11 +5,8 @@ import math
 import matplotlib.pyplot as plt
 import numpy as np
 import os
-
+import scipy    # Required by networkx.random_geometric_graph
 from datetime import datetime
-
-# Required by networkx.random_geometric_graph
-import scipy
 
 # Things to do:
 # TODO añadir documentación detallada sobre los parámetros y funciones
@@ -46,12 +43,12 @@ class Graph:
         
         # Connected components
         connected_components = sorted(nx.connected_components(self.graph), key=len, reverse=True)   #Sorted from largest to smallest
-        cc_sizes = map(len, connected_components)                                                   #Tamanys de les components connexes
+        # cc_sizes = map(len, connected_components)                                                   #Tamanys de les components connexes
         
         largest_component_nodes = max(nx.connected_components(self.graph), key=len)
         largest_component = self.graph.subgraph(largest_component_nodes)
-        largest_c_diameter = nx.diameter(largest_component)
-        
+        largest_c_diameter = nx.diameter(largest_component) if nx.is_connected(largest_component) else math.inf
+                
         dct = {
             "Order":self.graph.order(),
             "Size":self.graph.size(),
@@ -66,6 +63,7 @@ class Graph:
             "Average_Clustering_Coefficient":nx.average_clustering(self.graph),
             "Triangle_number": nx.triangles(self.graph, 0), # Esto devuelve un mapping, hay que hacerlo de alguna otra forma
             # Tamaños de componentes connexas
+            "K_value": max(nx.core_number(self.graph).values()),
             "K_core_order": nx.k_core(self.graph).order()
         }
         frame = pd.DataFrame(index=[index], data=dct)
@@ -75,7 +73,7 @@ class Graph:
     
     def drawRandomGeometricGraph(self) -> plt.Figure:
         """
-        Imprimeix per pantalla el graf aleatori geomètric
+        Guarda a la carpeta de tests el graf passat per paràmetre, en forma gràfica (format png)
         
         Codi importat i adaptat des d'el web de NetworkX: 
         https://networkx.org/documentation/stable/auto_examples/drawing/plot_random_geometric_graph.html
@@ -187,7 +185,6 @@ class MultilayerGraph(Graph):
         inter = rang
         self.graph = self.graphList[0].graph.copy()
         
-        plots = [self.drawRandomGeometricGraph()]               # Estat inicial 
         df = [Graph.getInfo(self)]                              # Data frame
         
         for graph in self.graphList[1:]:
@@ -196,11 +193,10 @@ class MultilayerGraph(Graph):
             inter -= 1
             if inter == 0:
                 df.append(Graph.getInfo(self))                  # Get dataframe
-                plots.append(self.drawRandomGeometricGraph())   # Print graph
                 inter = rang
         
         df = pd.concat(df)
-        return df, plots
+        return df
     
     def radiusProgression(self, r_ini: float, r_fin: float, r_add: float) -> pd.DataFrame:
         """
