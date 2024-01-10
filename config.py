@@ -85,7 +85,7 @@ class Config:
             print(f"El radi final no es troba en el rang de valors permesos:[{MINIMUM_RADIUS},{sqrt(self.x ** self.x + self.x ** self.x)}]")
             raise ValueError
         try:
-            assert(self.r_ini < self.r_fin)
+            assert(self.test not in ["2","3"] or self.r_ini < self.r_fin)
         except(AssertionError):
             print(f"El radi final és més petit que el radi inicial: r_fin={self.r_fin}, r_ini={self.r_ini}")
             raise ValueError

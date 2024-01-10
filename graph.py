@@ -7,7 +7,6 @@ import numpy as np
 import os
 import scipy    # Required by networkx.random_geometric_graph
 from datetime import datetime
-
 # Things to do:
 # TODO añadir documentación detallada sobre los parámetros y funciones
 
@@ -61,13 +60,23 @@ class Graph:
             "Min_degree":min_degree,
             "Max_degree":max_degree,
             "Average_Clustering_Coefficient":nx.average_clustering(self.graph),
-            "Triangle_number": nx.triangles(self.graph, 0), # Esto devuelve un mapping, hay que hacerlo de alguna otra forma
-            # Tamaños de componentes connexas
+            "Triangle_number": nx.triangles(self.graph, 0),
             "K_value": max(nx.core_number(self.graph).values()),
             "K_core_order": nx.k_core(self.graph).order()
         }
         frame = pd.DataFrame(index=[index], data=dct)
         return frame
+    
+    def getDegreeFrequency(self) -> dict:
+        """
+        Mètode per obtenir la freqüència de cada grau al graf, és a dir el número de vegades que un grau apareix al graf
+
+        Returns:
+            dict: Diccionari que contè, per cada valor de grau al graf, el número de vegades que aquest apareix. 
+        """
+        degrees = [d for (_,d) in list(self.graph.degree)]
+        degreeCounting = {d:degrees.count(d) for d in degrees}
+        return dict(sorted(degreeCounting.items()))
    
     # Graph printing
     
