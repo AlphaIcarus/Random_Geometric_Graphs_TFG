@@ -26,7 +26,6 @@ class Config:
         """Constructora per la classe de configuració.
         
         Defineix els paràmetres necessaris per executar l'script.
-        TODO aplicar mejores restricciones para los parámetros
         """
         self.test: str
         """Paràmetre test: defineix el tipus de test que executem"""

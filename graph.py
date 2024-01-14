@@ -14,8 +14,6 @@ import os
 import scipy    # Required by networkx.random_geometric_graph
 from datetime import datetime
 
-# Utils
-
 class Graph:
 
     def __init__(self, id: int, n: int, r: float, x: float, positions = None):
@@ -87,8 +85,6 @@ class Graph:
         
         Codi importat i adaptat des d'el web de NetworkX: 
         https://networkx.org/documentation/stable/auto_examples/drawing/plot_random_geometric_graph.html
-        
-        - TODO: Rehacer el código para imprimir más bonito
         """
         
         G = self.graph
@@ -189,8 +185,6 @@ class MultilayerGraph(Graph):
         """
         Mètode per obtenir un data frame de com evoluciona el graf multicapa en diferents estats.
         També obtenim un dataframe amb la informació dels grafs intermitjos.
-        
-        - TODO actualmente se generan uno a uno, hay que obtener todas las imágenes de grafo y luego imprimirlas
         """
         inter = rang
         self.graph = self.graphList[0].graph.copy()
@@ -212,9 +206,6 @@ class MultilayerGraph(Graph):
         """
         Mètode que, donat un radi inicial, un radi final i un valor, on r_ini + r_add <= r_fin, Va imprimint el graf multicapa fent servir
         els valors intermitjos de la progressió [r_ini, r_ini + r_add, r_ini + r_add*2, ... , r_ini + r_add*N <= r_fin] per N màxima.
-        
-        - TODO no funciona, tengo que generar los grafos de la colección de nuevo con sus posiciones, con cada radio intermedio,
-            y luego generar el multicapa.
         """
         graphs = self.graphList.copy()                                                                  
         pos = [nx.get_node_attributes(self.graphList[i].graph, "pos") for i in range(len(self.graphList))] 
@@ -240,8 +231,6 @@ class MultilayerGraph(Graph):
         Mètode per obtenir els gràfics de com varien els atributs del graf multicapa, de manera progressiva.
         
         Els gràfics que s'obtenen venen donats per les propietats que volem obtenir del graf (donat a getInfo)
-        
-        - TODO: Cambiar el funcionamiento para usar emptyMultilayer y buildMultilayer, y devolver el dataset con la info por capas
         """
         self.emptyMultilayer()
         self.graph = self.graphList[0].graph

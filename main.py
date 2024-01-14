@@ -1,10 +1,3 @@
-"""
-TODOs generales:
-    - TODO Documentar todas las funciones, con sus @param, @return y la función que hacen (mirar online documentación en python completa)
-    - TODO Rellenar con todos los paquetes necesarios para pip install en execute.sh        
-    - TODO Obtener los grafos en forma de png por cada test, para ponerlos en la memoria   
-"""
-
 """@package Main
 
 Script principal d'execució dels experiments. Consta d'una sèrie de tests, així com funcions auxiliars per manipular
@@ -25,33 +18,26 @@ from datetime import datetime
 from time import time
 
 # Parameters
-now: str = str(datetime.now()).replace(":",".")                      # Necessari pel format de les carpetes
-n_values: list = [1000,2000,3000]                                     # Valors dels ordres del test 2
-tdir: str = '/' if os.name == 'posix' else '\\'                      # Barra espaiadora
-dir: str = f".{tdir}test_output{tdir}{now}"          # Direcció de sortida dels tests
+now: str = str(datetime.now()).replace(":",".")                     # Necessari pel format de les carpetes
+n_values: list = [1000,2000,3000]                                   # Valors dels ordres del test 2
+tdir: str = '/' if os.name == 'posix' else '\\'                     # Barra espaiadora
+dir: str = f".{tdir}test_output{tdir}{now}"                         # Direcció de sortida dels tests
 
 # Auxiliar functions
 
 ## Dataframe Utils
 
 def saveDataFrames(dfs: list[pd.DataFrame]) -> None:
-    """Funció auxiliar per guardar una sèrie de data frames en memòria persistent. Fem servir el format CSV (Comma Separated Value).
-
-    Args:
-        dfs (list[pd.DataFrame]): Llista de data frames.
+    """
+    Funció auxiliar per guardar una sèrie de data frames en memòria persistent. Fem servir el format CSV (Comma Separated Value).
     """
     os.makedirs(dir, exist_ok=True)  
     [dfs[i].to_csv(dir + tdir + f"dataframe{i}") for i in range(len(dfs))]
     return
 
 def loadDataFrames(path: str) -> list[pd.DataFrame]:
-    """Funció auxiliar per carregar una sèrie de data frames de memòria persistent. Fem servir el format CSV (Comma Separated Value).
-    
-    Args:
-        path (str): Path absolut o relatiu al fitxer a carregar
-
-    Returns:
-        list[pd.DataFrame]: Llista de data frames amb els valors de memòria.
+    """
+    Funció auxiliar per carregar una sèrie de data frames de memòria persistent. Fem servir el format CSV (Comma Separated Value).
     """
     csvs: list[str] = filter(str.endswith(".csv") == True, os.listdir(path))
     
@@ -66,8 +52,6 @@ def dataframeMean(dfList: list[pd.DataFrame]) -> pd.DataFrame:
     """
     Funció auxiliar que, donada una llista de dataframes amb les mateixes columnes i el mateix número de files i columnes,
     retorna un dataframe on cada valor df[j][k] és la mitjana de tots els valors i-èssim df_i[j][k]
-    
-    - TODO tenemos que vigilar con atributos como is_eulerian, al hacer la media devuelve valores diferentes a 0 o 1
     """
     nDataFrames = conf.num_copies   # Number of dataframes
     df = dfList[0]                  # Final dataframe
@@ -97,8 +81,6 @@ def dataframeMean(dfList: list[pd.DataFrame]) -> pd.DataFrame:
 def drawAndStoreGraphic(xvalues: list, yvalues: list, xlabel: str, ylabel: str, title: str, zeroLim: bool = True) -> plt.Figure:
     """
     Funció auxiliar que, donats uns valors pels eixos, títols i títol de figura, retorna la figura resultant i la guarda a memòria.
-    
-    - TODO crear un parámetro 'special_case' con valor None por defecto donde especificar casos para crear gráficos específicos
     """
     fig, ax = plt.subplots()
     ax.plot(xvalues, yvalues)
@@ -115,8 +97,6 @@ def drawAndStoreGraphic(xvalues: list, yvalues: list, xlabel: str, ylabel: str, 
 def drawAndStoreMultipleLinearGraphic(xvalues: list, yvalues: list[list], xlabel: str, ylabel: str, title: str) -> plt.Figure:
     """
     Funció auxiliar que, donats uns valors pels eixos, títols i títol de figura, retorna la figura resultant i la guarda a memòria.
-    
-    - TODO crear un parámetro 'special_case' con valor None por defecto donde especificar casos para crear gráficos específicos
     """
     fig, ax = plt.subplots()
     
@@ -135,8 +115,6 @@ def drawAndStoreMultipleLinearGraphic(xvalues: list, yvalues: list[list], xlabel
 def drawAndStoreMultipleLinearRadiusGraphic(xvalues: list, yvalues: list[list], xlabel: str, ylabel: str, title: str) -> plt.Figure:
     """
     Funció auxiliar que, donats uns valors pels eixos, títols i títol de figura, retorna la figura resultant i la guarda a memòria.
-    
-    - TODO crear un parámetro 'special_case' con valor None por defecto donde especificar casos para crear gráficos específicos
     """
     fig, ax = plt.subplots()
     r_values = [0.01,0.1,0.5]
@@ -168,16 +146,16 @@ def kCorePlot(G: nx.Graph) -> plt.Figure:
     Imported code from: https://stackoverflow.com/questions/70297329/visualization-of-k-cores-using-networkx
     - TODO Aún no funciona
     """
-    # build a dictionary of k-level with the list of nodes
+    # Build a dictionary of k-level with the list of nodes
     kcores = defaultdict(list)
     for n, k in nx.core_number(G).items():
         kcores[k].append(n)
 
-    # compute position of each node with shell layout
+    # Compute position of each node with shell layout
     pos = nx.layout.shell_layout(G, list(kcores.values()))
     colors = {1: 'red', 2: 'green'}  # need to be improved, for demo
 
-    # draw nodes, edges and labels
+    # Draw nodes, edges and labels
     for kcore, nodes in kcores.items():
         nx.draw_networkx_nodes(G, pos, nodelist=nodes, node_color=colors[kcore])
     nx.draw_networkx_edges(G, pos, width=0.2)
@@ -192,8 +170,6 @@ def config() -> None:
     """
     Funció principal per fer configuracions previes a l'execució de l'script.
     Carrega a l'objecte global de la classe Config els paràmetres per executar l'script.
-    
-    - TODO quizá sea interesante mandar todo a la constructora de Config
     """
     global conf
     global multilayer
@@ -295,8 +271,6 @@ def test1() -> None:
     add_values_to_plots(plot, xValues, df)  # Every plot has xValues for x dimension, and df[key] for y dimension.
     save_plots()
     return
-    
-    - TODO: Hacer documentación del experimento
     """
     xvalues = range(1,conf.n+1)
     df = []
@@ -360,9 +334,7 @@ def test2() -> None:
     add_values_to_plots(plot, xValues, df)  # Every plot has xValues for x dimension, and df[key] for y dimension.
     save_plots()
     return
-    """    
-    # dfs = Parallel(n_jobs=-1)(multilayer[i].radiusProgression(conf.r_ini, conf.r_fin, conf.radius_add) for i in range(conf.num_copies))
-    
+    """        
     dfs = [multilayer[i].radiusProgression(conf.r_ini, conf.r_fin, conf.radius_add) for i in range(conf.num_copies)]
     df = dataframeMean(dfs)
       
@@ -591,7 +563,6 @@ def radiusComparison() -> None:
 
     Els valors de radi emprats son 0.01, 0.1 i 0.5. Consisteix en un test específic localitzat.
     """
-    
     dfs = []
     rValues = [0.01,0.1,0.5]
     xvalues = range(1,conf.n+1)
