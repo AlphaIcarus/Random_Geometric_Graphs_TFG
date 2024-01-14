@@ -1,3 +1,9 @@
+"""@package Graph
+
+Paquet que conté la implementació de les classes Graph i MultilayerGraph, que representen un
+graf geomètric aleatori i un graf geomètric aleatori multicapa, respectivament.
+"""
+
 import networkx as nx
 import random
 import pandas as pd
@@ -7,8 +13,6 @@ import numpy as np
 import os
 import scipy    # Required by networkx.random_geometric_graph
 from datetime import datetime
-# Things to do:
-# TODO añadir documentación detallada sobre los parámetros y funciones
 
 # Utils
 
@@ -25,7 +29,7 @@ class Graph:
              
         if positions is not None:
             positions = {i: (random.uniform(0, x), random.uniform(0, x)) for i in range(n)}
-        self.graph = nx.random_geometric_graph(n=n, radius=r, pos=positions)   # Graph itself 
+        self.graph = nx.random_geometric_graph(n=n, radius=r, pos=positions)
     
         return
     
@@ -41,9 +45,6 @@ class Graph:
         max_degree = max(degrees)
         
         # Connected components
-        connected_components = sorted(nx.connected_components(self.graph), key=len, reverse=True)   #Sorted from largest to smallest
-        # cc_sizes = map(len, connected_components)                                                   #Tamanys de les components connexes
-        
         largest_component_nodes = max(nx.connected_components(self.graph), key=len)
         largest_component = self.graph.subgraph(largest_component_nodes)
         largest_c_diameter = nx.diameter(largest_component) if nx.is_connected(largest_component) else math.inf
@@ -119,8 +120,8 @@ class Graph:
         except(FileExistsError):
             pass
         
-        fig.savefig(dir + tdir + name + ".png") # Save figure
-        plt.close()     # Figure closing due to overload
+        fig.savefig(dir + tdir + name + ".png")
+        plt.close()
         return
 
 class MultilayerGraph(Graph):
@@ -186,7 +187,7 @@ class MultilayerGraph(Graph):
     
     def seeProgression(self, rang: int) -> (pd.DataFrame, [plt.Figure]):
         """
-        Mètode per obtenir un data frame i imatges de com evoluciona el graf multicapa en diferents estats.
+        Mètode per obtenir un data frame de com evoluciona el graf multicapa en diferents estats.
         També obtenim un dataframe amb la informació dels grafs intermitjos.
         
         - TODO actualmente se generan uno a uno, hay que obtener todas las imágenes de grafo y luego imprimirlas
@@ -194,14 +195,14 @@ class MultilayerGraph(Graph):
         inter = rang
         self.graph = self.graphList[0].graph.copy()
         
-        df = [Graph.getInfo(self)]                              # Data frame
+        df = [Graph.getInfo(self)]
         
         for graph in self.graphList[1:]:
             # Add new edges
             self.graph.add_edges_from(set(graph.graph.edges()))
             inter -= 1
             if inter == 0:
-                df.append(Graph.getInfo(self))                  # Get dataframe
+                df.append(Graph.getInfo(self))
                 inter = rang
         
         df = pd.concat(df)
@@ -215,11 +216,11 @@ class MultilayerGraph(Graph):
         - TODO no funciona, tengo que generar los grafos de la colección de nuevo con sus posiciones, con cada radio intermedio,
             y luego generar el multicapa.
         """
-        graphs = self.graphList.copy()                                                                   # Còpies dels valors originals per restaurar
-        pos = [nx.get_node_attributes(self.graphList[i].graph, "pos") for i in range(len(self.graphList))]  # We get the nodes of every graph
-        self.emptyMultilayer()                                                                              # Buidem el multicapa
+        graphs = self.graphList.copy()                                                                  
+        pos = [nx.get_node_attributes(self.graphList[i].graph, "pos") for i in range(len(self.graphList))] 
+        self.emptyMultilayer()                                                                            
         
-        df = [] # Informació a retornar
+        df = []
         
         for radius in np.arange(r_ini,r_fin,r_add):
             """Aconseguim els grafs nous donats pel radi radius, construim el multicapa nou i el dibuixem"""
@@ -228,8 +229,7 @@ class MultilayerGraph(Graph):
             df.append(Graph.getInfo(self))
             self.emptyMultilayer()
             
-        df = pd.concat(df)                         # Construim el dataframe
-        # Recuperem les dades anteriors
+        df = pd.concat(df)
         self.graphList = graphs
         self.buildMultilayer()
         
@@ -243,7 +243,6 @@ class MultilayerGraph(Graph):
         
         - TODO: Cambiar el funcionamiento para usar emptyMultilayer y buildMultilayer, y devolver el dataset con la info por capas
         """
-        #New mode
         self.emptyMultilayer()
         self.graph = self.graphList[0].graph
         df = []

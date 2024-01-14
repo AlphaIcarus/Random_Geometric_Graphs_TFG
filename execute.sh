@@ -3,13 +3,14 @@
 # Autoconfiguration
 # Uncomment to upgrade packages
 
-# !pip install matplotlib
-# !pip install networkx
-# !pip install argparse
-# !pip install pandas
-# !pip install random
-# !pip install math
-# !pip install scipy
+!pip install matplotlib
+!pip install networkx
+!pip install argparse
+!pip install pandas
+!pip install random
+!pip install math
+!pip install scipy
+!pip install numpy
 
 # Main script
 
@@ -34,6 +35,19 @@
 # Freqüència dels graus del multicapa: 
   python3 main.py -test degreeFreq -n 1000 -r_ini 0.1 -r_fin 0.2 -radius_add 0.005 -num_graph 20 -num_copies 5
 
+# Estudi sobre la pendent del grau mínim/màxim segons el valor del radi, ordre fixe:
+  python3 main.py -test radiusComparison -n 1000 -r_ini 0.1 -r_fin 0.2 -radius_add 0.005 -num_graph 20 -num_copies 5
+
+
+# Justificacions experimentals:
+
+## Execució de Test 1 amb diferents valors de radi, per tal de trobar diferències en la pendent al grau mínim/màxim
+
+  python3 main.py -test 1 -n 1000 -r_ini 0.01 -r_fin 0.2 -radius_add 0.005 -num_graph 20 -num_copies 5
+
+  python3 main.py -test 1 -n 1000 -r_ini 0.1 -r_fin 0.2 -radius_add 0.005 -num_graph 20 -num_copies 5
+
+  python3 main.py -test 1 -n 1000 -r_ini 0.5 -r_fin 0.2 -radius_add 0.005 -num_graph 20 -num_copies 5
 
 # RELANZAR:
 # TODO

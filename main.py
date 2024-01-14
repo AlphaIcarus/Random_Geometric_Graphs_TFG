@@ -1,11 +1,14 @@
 """
 TODOs generales:
     - TODO Documentar todas las funciones, con sus @param, @return y la función que hacen (mirar online documentación en python completa)
-    - TODO Rellenar con todos los paquetes necesarios para pip install en execute.sh
-    - TODO Mirar los pseudocódigos del main y corregirlos (o cogerlos del latex)
-        
-    - TODO Obtener el parámetro K
+    - TODO Rellenar con todos los paquetes necesarios para pip install en execute.sh        
     - TODO Obtener los grafos en forma de png por cada test, para ponerlos en la memoria   
+"""
+
+"""@package Main
+
+Script principal d'execució dels experiments. Consta d'una sèrie de tests, així com funcions auxiliars per manipular
+els gràfics, crear-los i guardar-los al sistema de fitxers. 
 """
 
 # Packages
@@ -16,18 +19,16 @@ import numpy as np
 import os
 import pandas as pd
 from collections import defaultdict
-# from joblib import Parallel
-
 from graph import Graph, MultilayerGraph
 from config import Config
 from datetime import datetime
 from time import time
 
 # Parameters
-now = str(datetime.now()).replace(":",".")      # Necessari pel format de les carpetes
-n_values = [1000,2000,3000]                     # Valors dels ordres del test 2
-tdir = '/' if os.name == 'posix' else '\\'      # Barra espaiadora
-dir = f".{tdir}test_output{tdir}" + now         # Direcció de sortida dels tests
+now: str = str(datetime.now()).replace(":",".")                      # Necessari pel format de les carpetes
+n_values: list = [1000,2000,3000]                                     # Valors dels ordres del test 2
+tdir: str = '/' if os.name == 'posix' else '\\'                      # Barra espaiadora
+dir: str = f".{tdir}test_output{tdir}{now}"          # Direcció de sortida dels tests
 
 # Auxiliar functions
 
@@ -120,6 +121,26 @@ def drawAndStoreMultipleLinearGraphic(xvalues: list, yvalues: list[list], xlabel
     fig, ax = plt.subplots()
     
     [ax.plot(xvalues, yvalues[i], label="Order: " + str(n_values[i])) for i in range(len(yvalues))]
+     
+    ax.set(xlabel=xlabel, ylabel=ylabel, title=title)
+    ax.grid()
+    ax.legend()
+    ax.set_xlim(left=0)
+    
+    os.makedirs(dir, exist_ok=True)  
+    fig.savefig(dir + "\\" + ylabel.replace(' ','_') + ".png")   # Save figure
+    plt.close()                                 # Figure closing due to overload
+    return fig
+
+def drawAndStoreMultipleLinearRadiusGraphic(xvalues: list, yvalues: list[list], xlabel: str, ylabel: str, title: str) -> plt.Figure:
+    """
+    Funció auxiliar que, donats uns valors pels eixos, títols i títol de figura, retorna la figura resultant i la guarda a memòria.
+    
+    - TODO crear un parámetro 'special_case' con valor None por defecto donde especificar casos para crear gráficos específicos
+    """
+    fig, ax = plt.subplots()
+    r_values = [0.01,0.1,0.5]
+    [ax.plot(xvalues, yvalues[i], label="Radius: " + str(r_values[i])) for i in range(len(yvalues))]
      
     ax.set(xlabel=xlabel, ylabel=ylabel, title=title)
     ax.grid()
@@ -246,7 +267,7 @@ def config() -> None:
         dest="num_copies"
     )
     args = parser.parse_args()
-    conf = Config(args)
+    conf = Config(args)    
     multilayer = []
     for _ in range(conf.num_copies):
         collection = [Graph(i,conf.n,conf.r_ini,conf.x) for i in range(conf.num_graph)]
@@ -563,6 +584,38 @@ def degreeFrequency() -> None:
     drawAndStoreGraphic(dct.keys(), dct.values(), "Degree values for nodes in graph", 
                         "Frequency of degree value", f"degree occurrences in multilayer({conf.n},{conf.r_ini},{conf.num_graph}), {conf.num_copies} copies", zeroLim=False)
     return
+
+def radiusComparison() -> None:
+    """
+    Funció per obtenir dos gràfics comparatius de com modifica la progressió del grau min/max per diferents valors de radi, per un ordre concret
+
+    Els valors de radi emprats son 0.01, 0.1 i 0.5. Consisteix en un test específic localitzat.
+    """
+    
+    dfs = []
+    rValues = [0.01,0.1,0.5]
+    xvalues = range(1,conf.n+1)
+    
+    for r in rValues:
+        df1 = []
+        for _ in range(conf.num_copies):
+            df2 = []
+            for n in xvalues:
+                collection = [Graph(i,n,r,conf.x) for i in range(conf.num_graph)]
+                ml = MultilayerGraph(collection, default_build=True)
+                df2.append(Graph.getInfo(ml))
+            df1.append(pd.concat(df2))
+        df = dataframeMean(df1)
+        dfs.append(df)
+    
+    xvalues = range(1,conf.n+1)
+    xlabel = "Ordre value"
+    df = [dfs[i]["Min_degree"] for i in range(len(dfs))]
+    min_degree_evol_plot = drawAndStoreMultipleLinearRadiusGraphic(xvalues=xvalues, yvalues=df, 
+                                         xlabel=xlabel, ylabel="Minimum degree in graph", title="Minimum degree progression by number of layers, multiple orders")
+    df = [dfs[i]["Max_degree"] for i in range(len(dfs))]
+    max_degree_evol_plot = drawAndStoreMultipleLinearRadiusGraphic(xvalues=xvalues, yvalues=df, 
+                                         xlabel=xlabel, ylabel="Maximum degree in graph", title="Maximum degree progression by number of layers, multiple orders")
     
 ### Main
     
@@ -608,6 +661,11 @@ def main() -> None:
         Obtenció dels graus i les seves freqüències.
         """
         degreeFrequency()
+    elif conf.test == "radiusComparison":
+        """
+        Comparació de les propietats d'estudi segons diferents valors de radi.
+        """
+        radiusComparison()
     else:
         raise Exception("Número de test erroni")
         

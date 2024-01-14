@@ -1,8 +1,6 @@
 """@package Config
 
 Paquet que conté la configuració de paràmetres per l'execució de l'script principal
- 
-TODO Poner documentción de esta clase
 """
 
 # Packages
