@@ -60,20 +60,6 @@ def dataframeMean(dfList: list[pd.DataFrame]) -> pd.DataFrame:
     for dataframe in dfList[1:]:
         df = df.add(dataframe)
     df = df.div(nDataFrames)
-
-    # ALT METHOD
-    """
-    # For every dataframe, we sum every i-th-j-th value to the i-th-j-th value of every other dataframe
-    for dataframe in dfList[1:]:    # For every dataframe
-        for col in dataframe.columns:  # For every column
-            for row in dataframe.index:
-                df[col][row] += dataframe[col][row] 
-    
-    # For every value in final dataframe, we divide the value by the number of dataframes
-    for col in df.columns:  # For every column
-        for row in df.index:
-            df[col][row] /= nDataFrames
-    """
     return df
 
 ## Plot generation and other operations
@@ -138,31 +124,6 @@ def savePlots(fig: plt.Figure, fileName: str) -> None:
     os.makedirs(dir, exist_ok=True)  
     fig.savefig(dir + tdir + fileName + ".png") # Save figure
     return
-
-def kCorePlot(G: nx.Graph) -> plt.Figure:
-    """
-    Funció auxiliar que retorna el k-core del graf donat. k és maximal per defecte.
-    
-    Imported code from: https://stackoverflow.com/questions/70297329/visualization-of-k-cores-using-networkx
-    - TODO Aún no funciona
-    """
-    # Build a dictionary of k-level with the list of nodes
-    kcores = defaultdict(list)
-    for n, k in nx.core_number(G).items():
-        kcores[k].append(n)
-
-    # Compute position of each node with shell layout
-    pos = nx.layout.shell_layout(G, list(kcores.values()))
-    colors = {1: 'red', 2: 'green'}  # need to be improved, for demo
-
-    # Draw nodes, edges and labels
-    for kcore, nodes in kcores.items():
-        nx.draw_networkx_nodes(G, pos, nodelist=nodes, node_color=colors[kcore])
-    nx.draw_networkx_edges(G, pos, width=0.2)
-    nx.draw_networkx_labels(G, pos)
-    plot = plt.gcf()
-
-    return plot
     
 ## Main utilities
 

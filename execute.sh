@@ -14,9 +14,6 @@
 
 # Main script
 
-# Execució per defecte. totalment programable, serveix per fer petites proves i execucions personalitzades.
-  python3 main.py -test default -n 1000 -r_ini 0.1 -r_fin 0.2 -radius_add 0.005 -num_graph 20 -num_copies 5
-
 # Test 1: Evolució del multicapa segons número de nodes n
   python3 main.py -test 1 -n 1000 -r_ini 0.1 -r_fin 0.2 -radius_add 0.005 -num_graph 20 -num_copies 5
 
@@ -38,7 +35,6 @@
 # Estudi sobre la pendent del grau mínim/màxim segons el valor del radi, ordre fixe:
   python3 main.py -test radiusComparison -n 1000 -r_ini 0.1 -r_fin 0.2 -radius_add 0.005 -num_graph 20 -num_copies 5
 
-
 # Justificacions experimentals:
 
 ## Execució de Test 1 amb diferents valors de radi, per tal de trobar diferències en la pendent al grau mínim/màxim
@@ -49,5 +45,8 @@
 
   python3 main.py -test 1 -n 1000 -r_ini 0.5 -r_fin 0.2 -radius_add 0.005 -num_graph 20 -num_copies 5
 
-# RELANZAR:
-# TODO
+# Extra
+
+# Execució per defecte. totalment programable, serveix per fer petites proves i execucions personalitzades.
+#   Per executar aquesta part del programa, treieu '#' del principi de la línia següent.
+# python3 main.py -test default -n 1000 -r_ini 0.1 -r_fin 0.2 -radius_add 0.005 -num_graph 20 -num_copies 5

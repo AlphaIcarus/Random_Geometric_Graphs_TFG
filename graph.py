@@ -166,9 +166,6 @@ class MultilayerGraph(Graph):
         Mètode per obtenir totes les dades d'interés del graf unió.
         
         Primer obtenim el dataframe del graf unió, posteriorment obtenim el de la seva col·lecció.
-        
-        TODO Puede ser interesante guardar la informacón como atributo en la propia clase
-        TODO Rellenar el dataframme con toda la info de interés
         """
         df = [Graph.getInfo(self)]
         size = len(self.graphList)

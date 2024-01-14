@@ -48,7 +48,7 @@ class Config:
         self.num_graph: int
         """Paràmetre num_graph: defineix el número de graphs a generar pel graf unió"""
         self.num_copies: int
-        """Paràmetre num:copies: defineix el número de grafs multicapa a generar en les proves, per tal d'obtenir una sortida més homogènia"""
+        """Paràmetre num_copies: defineix el número de grafs multicapa a generar en les proves, per tal d'obtenir una sortida més homogènia"""
         
         # Value insertion
         self.test = args.test
