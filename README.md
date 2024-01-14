@@ -19,4 +19,10 @@ Per saber quin experiment realitzar, adreceu-vos a la memòria del projecte i se
 7. Número de capes del graf multicapa -num_graph: Quantitat de capes de les quals disposa el graf multicapa a generar. En cas que l'estudi es realitzi sobre el número de capes, tenim que la progressió és range(1,c+1), és a dir testem a partir d'una capa fins a *num_graphs* capes. Aquest valor compleix *num_graphs* > 0.
 8. Número de rèpliques de l'experiment -num_copies: Per estandarditzar els resultats i trobar valors més propers als valors teòrics, realitzem diverses rèpliques del mateix experiment i fem la mitjana aritmètica dels valors resultants, degut al factor aleatori del què disposen els grafs geomètrics aleatoris. El número de rèpliques compleix que *num_copies* > 0.
 
+Un exemple d'execució seria:
+
+python3 main.py -test 1 -n 1000 -r_ini 0.1 -r_fin 0.2 -radius_add 0.005 -num_graph 20 -num_copies 5
+
+On realitzem l'experiment número 1, amb *n* = 1000 nodes, radi generador *r* = 0.1, número de capes *c* = 20 i 5 rèpliques del mateix experiment.
+
 Hem de tenir en compte la dimensió edls experiments que realitzem. Si donem valors molt elevats als paràmetres d'entrada, tindrem que el programa trigarà massa en executar, o potser esgota els recursos disponibles de la màquina, si la mostra a analitzar és excessivament gran.
